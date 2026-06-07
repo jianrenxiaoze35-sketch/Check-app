@@ -2,1238 +2,469 @@
 <html lang="ja">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
-<meta name="theme-color" content="#ffffff">
-<meta name="apple-mobile-web-app-capable" content="yes">
-<meta name="apple-mobile-web-app-status-bar-style" content="default">
-<meta name="apple-mobile-web-app-title" content="Daily Check">
+<meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Daily Check</title>
-<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@3.9.0/tabler-icons.min.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@latest/tabler-icons.min.css">
 <style>
-:root{--op:#0F6E56;--cl:#534AB7}
-*{box-sizing:border-box;margin:0;padding:0}
-body{font-family:-apple-system,BlinkMacSystemFont,'Hiragino Sans','Yu Gothic',sans-serif;background:#f5f5f5;color:#1a1a1a;min-height:100vh}
-button,input{font-family:inherit}
-.scr{display:none;min-height:100vh;flex-direction:column}
-.scr.on{display:flex}
-.ph{background:#fff;border-bottom:0.5px solid #e5e5e5;padding:12px 16px;display:flex;align-items:center;gap:10px;position:sticky;top:0;z-index:10}
-.ph-info{flex:1}
-.ph-eye{font-size:11px;color:#999;letter-spacing:.1em}
-.ph-title{font-size:15px;font-weight:500}
-.bk{width:32px;height:32px;border-radius:8px;background:#f5f5f5;border:0.5px solid #e0e0e0;color:#666;cursor:pointer;display:flex;align-items:center;justify-content:center;flex-shrink:0;font-size:16px}
-.dbadge{background:#f5f5f5;border:0.5px solid #e0e0e0;border-radius:8px;padding:4px 10px;text-align:right;flex-shrink:0}
-.dbadge-s{font-size:9px;color:#999;letter-spacing:.06em}
-.dbadge-v{font-size:11px;font-weight:500;color:#666}
-.bot{position:fixed;bottom:0;left:0;right:0;padding:10px 16px 24px;background:#fff;border-top:0.5px solid #e5e5e5;z-index:20}
-.mb{width:100%;padding:14px;border-radius:12px;border:none;color:#fff;font-size:14px;font-weight:500;cursor:pointer;transition:all .25s;display:flex;align-items:center;justify-content:center;gap:6px}
-.mb:disabled{background:#e0e0e0!important;color:#999!important;cursor:not-allowed}
-/* HOME */
-.h-hero{padding:24px 16px 0}
-.h-eye{font-size:11px;color:#999;letter-spacing:.12em;margin-bottom:5px}
-.h-h1{font-size:22px;font-weight:500;margin-bottom:4px}
-.h-date{font-size:13px;color:#666;margin-bottom:20px}
-.h-cards{padding:0 16px;display:flex;flex-direction:column;gap:10px}
-.mc{background:#fff;border:0.5px solid #e5e5e5;border-radius:12px;padding:16px;cursor:pointer;text-align:left;transition:background .15s;width:100%}
-.mc:hover{background:#f9f9f9}
-.mc-tm{font-size:11px;font-weight:500;letter-spacing:.1em;margin-bottom:5px}
-.mc-nm{font-size:16px;font-weight:500;margin-bottom:3px}
-.mc-sb{font-size:12px;color:#666;margin-bottom:10px}
-.mc-tags{display:flex;gap:5px;flex-wrap:wrap}
-.tag{font-size:10px;font-weight:500;padding:2px 8px;border-radius:6px;border:0.5px solid}
-.h-bottom{padding:12px 16px 32px;display:flex;flex-direction:column;gap:10px}
-.rp{background:#fff;border:0.5px solid #e5e5e5;border-radius:12px;padding:14px 16px}
-.rp-head{display:flex;justify-content:space-between;align-items:center;margin-bottom:10px}
-.rp-title{font-size:11px;font-weight:500;color:#666;letter-spacing:.1em}
-.rp-btn{font-size:12px;color:#0066cc;background:none;border:none;cursor:pointer;padding:0}
-.rp-row{display:flex;justify-content:space-between;align-items:center;padding:6px 0;border-bottom:0.5px solid #f0f0f0}
-.rp-row:last-child{border-bottom:none}
-.rp-empty{font-size:12px;color:#aaa;text-align:center;padding:10px 0}
-/* GAPS WIDGET */
-.gap-widget{background:#fff;border:0.5px solid #e5e5e5;border-radius:12px;padding:14px 16px;margin-bottom:10px}
-.gap-title{font-size:11px;font-weight:500;color:#666;letter-spacing:.1em;margin-bottom:10px}
-.gap-list{display:flex;flex-direction:column;gap:6px}
-.gap-item{display:flex;align-items:center;gap:8px;padding:8px 10px;background:#FCEBEB;border:0.5px solid #E24B4A;border-radius:8px;font-size:12px;color:#A32D2D}
-.gap-item i{flex-shrink:0}
-.gap-empty{font-size:12px;color:#0F6E56;text-align:center;padding:16px 0;font-weight:500}
-/* STATS WIDGET */
-.stat-widget{background:#fff;border:0.5px solid #e5e5e5;border-radius:12px;padding:12px 16px;margin-bottom:10px}
-.stat-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:10px}
-.stat-box{background:#f5f5f5;border-radius:8px;padding:10px;text-align:center}
-.stat-lbl{font-size:10px;color:#999;margin-bottom:4px}
-.stat-val{font-size:16px;font-weight:500}
-.stat-sub{font-size:11px;color:#666;margin-top:2px}
-/* MANAGER */
-.mgr-inner{flex:1;overflow-y:auto;padding:16px 16px 40px}
-.staff-item{display:flex;align-items:center;gap:10px;padding:10px 12px;background:#fff;border:0.5px solid #e5e5e5;border-radius:8px;margin-bottom:6px}
-.staff-item-name{flex:1;font-size:14px;font-weight:500}
-.del-btn{width:32px;height:32px;border-radius:8px;border:0.5px solid #e0e0e0;background:#f5f5f5;color:#666;cursor:pointer;display:flex;align-items:center;justify-content:center;flex-shrink:0;transition:all .15s}
-.del-btn:hover{background:#FCEBEB;border-color:#E24B4A;color:#A32D2D}
-.add-row{display:flex;gap:8px;margin-bottom:8px}
-.add-row input{flex:1;padding:10px 12px;border-radius:8px;border:0.5px solid #e0e0e0;background:#fff;color:#1a1a1a;font-size:14px;outline:none}
-.add-row input:focus{outline:2px solid #0066cc;outline-offset:1px}
-.add-row button{padding:10px 14px;border-radius:8px;border:none;background:#E6F1FB;color:#185FA5;font-size:13px;font-weight:500;cursor:pointer;white-space:nowrap}
-.err{font-size:12px;color:#A32D2D;margin-bottom:8px;display:none}
-.err.on{display:block}
-.sec-label{font-size:11px;color:#999;font-weight:500;letter-spacing:.1em;margin-bottom:8px}
-.hint-box{background:#f5f5f5;border-radius:8px;padding:10px 12px;font-size:12px;color:#666;line-height:1.5}
-/* STAFF */
-.st-inner{flex:1;overflow-y:auto;padding:16px 16px 100px}
-.st-top{text-align:center;margin-bottom:20px}
-.st-em{font-size:36px;margin-bottom:10px}
-.st-h{font-size:18px;font-weight:500;margin-bottom:4px}
-.st-sub{font-size:13px;color:#666;line-height:1.6}
-.staff-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:8px;margin-bottom:20px}
-.sg-btn{padding:12px 10px;border-radius:12px;border:0.5px solid #e0e0e0;background:#fff;color:#1a1a1a;font-size:14px;font-weight:500;cursor:pointer;transition:all .15s;text-align:left;display:flex;align-items:center;gap:8px;width:100%}
-.sg-btn:hover{background:#f5f5f5}
-.sg-btn.sel{color:#fff;border-color:transparent}
-.direct-row{display:flex;gap:8px;margin-bottom:8px}
-.direct-row input{flex:1;padding:10px 12px;border-radius:8px;border:0.5px solid #e0e0e0;background:#fff;color:#1a1a1a;font-size:14px;outline:none}
-/* CHECK */
-.ck-sticky{position:sticky;top:0;z-index:10;background:#fff;border-bottom:0.5px solid #e5e5e5;padding:12px 16px 10px}
-.ck-hdr{display:flex;align-items:center;gap:10px;margin-bottom:10px}
-.ck-inf{flex:1}
-.ck-mode{font-size:11px;font-weight:500;letter-spacing:.1em;margin-bottom:2px}
-.ck-tt{font-size:15px;font-weight:500}
-.sbadge{display:flex;align-items:center;gap:5px;background:#f5f5f5;border:0.5px solid #e0e0e0;border-radius:12px;padding:5px 10px;cursor:pointer;flex-shrink:0}
-.sbadge-nm{font-size:12px;font-weight:500}
-.sbadge-ed{font-size:10px;color:#999}
-.ftabs{display:flex;gap:5px;overflow-x:auto;margin-bottom:8px;padding-bottom:2px;scrollbar-width:none}
-.ftabs::-webkit-scrollbar{display:none}
-.ft{padding:5px 11px;border-radius:20px;border:0.5px solid #e0e0e0;cursor:pointer;font-size:12px;font-weight:500;white-space:nowrap;background:#fff;color:#666;transition:all .15s}
-.ft.on{border-color:transparent;color:#fff}
-.prog-row{display:flex;align-items:center;gap:8px}
-.prog-lbl{font-size:11px;font-weight:500;min-width:90px}
-.btrack{flex:1;height:4px;background:#e5e5e5;border-radius:4px;overflow:hidden}
-.bfill{height:100%;border-radius:4px;transition:width .35s ease}
-.prog-ct{font-size:11px;color:#999;min-width:36px;text-align:right}
-.adiv{display:flex;align-items:center;gap:8px;padding:10px 16px 6px}
-.adiv-line{flex:1;height:0.5px;background:#e5e5e5}
-.adiv-lbl{font-size:11px;font-weight:500;padding:2px 8px;border-radius:20px;border:0.5px solid}
-.ci{display:flex;align-items:flex-start;gap:12px;padding:12px 16px;background:#fff;border:none;border-bottom:0.5px solid #f0f0f0;cursor:pointer;text-align:left;width:100%;transition:background .15s}
-.ci:hover{background:#fafafa}
-.ci-box{width:22px;height:22px;border-radius:6px;flex-shrink:0;margin-top:1px;background:transparent;border:1.5px solid #ccc;display:flex;align-items:center;justify-content:center;transition:all .15s}
-.ci-box.on{border:none}
-.ci-tx{flex:1;min-width:0}
-.ci-lr{display:flex;align-items:center;gap:6px;flex-wrap:wrap;margin-bottom:3px}
-.ci-lb{font-size:14px;font-weight:500;transition:all .15s}
-.ci.ck .ci-lb{color:#bbb;text-decoration:line-through}
-.hbg{font-size:10px;font-weight:500;padding:2px 6px;border-radius:6px;border:0.5px solid #E24B4A;color:#A32D2D;background:#FCEBEB}
-.abg{font-size:10px;padding:2px 6px;border-radius:6px;border:0.5px solid #e0e0e0;color:#999}
-.ci-dt{font-size:12px;color:#888;line-height:1.5}
-/* CONFIRM */
-.cf-body{flex:1;overflow-y:auto;padding:16px 16px 100px}
-.scard{background:#fff;border:0.5px solid #e5e5e5;border-radius:12px;overflow:hidden;margin-bottom:12px}
-.srow{display:flex;align-items:center;gap:10px;padding:10px 14px;border-bottom:0.5px solid #f0f0f0}
-.srow:last-child{border-bottom:none}
-.srow-ic{color:#999;font-size:16px;width:20px;text-align:center;flex-shrink:0}
-.srow-lb{font-size:12px;color:#666;min-width:60px}
-.srow-vl{font-size:13px;font-weight:500;flex:1}
-.ablock{background:#fff;border:0.5px solid #e5e5e5;border-radius:12px;overflow:hidden;margin-bottom:8px}
-.ablock-h{padding:9px 14px;border-bottom:0.5px solid #f0f0f0;display:flex;justify-content:space-between}
-.ablock-p{padding:8px 12px 10px;display:flex;flex-wrap:wrap;gap:5px}
-.pill{font-size:11px;padding:3px 8px;border-radius:6px;font-weight:500}
-.pill-ng{border:0.5px solid #e0e0e0;color:#bbb}
-.hblock{border:0.5px solid;border-radius:12px;padding:11px 14px;margin-bottom:10px}
-/* DONE */
-.done-in{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:32px 20px;text-align:center}
-.done-sg{display:grid;grid-template-columns:repeat(2,1fr);gap:10px;width:100%;max-width:300px;margin-bottom:24px}
-.done-st{background:#f5f5f5;border-radius:8px;padding:12px}
-.done-sl{font-size:11px;color:#666;margin-bottom:4px}
-.done-sv{font-size:15px;font-weight:500}
-/* TOAST */
-.toast{position:fixed;top:16px;left:50%;transform:translateX(-50%);background:#1a1a1a;color:#fff;font-size:13px;padding:10px 18px;border-radius:12px;z-index:100;opacity:0;transition:opacity .3s;pointer-events:none;white-space:nowrap}
-.toast.show{opacity:1}
-/* REC */
-.rec-card{background:#fff;border:0.5px solid #e5e5e5;border-radius:12px;overflow:hidden;margin-bottom:10px}
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body { font-family: -apple-system, BlinkMacSystemFont, 'Hiragino Sans', sans-serif; background: #f5f5f5; }
+.scr { display: none; }
+.scr.on { display: flex; flex-direction: column; min-height: 100vh; }
+.hdr { background: #fff; padding: 12px 16px; border-bottom: 1px solid #e0e0e0; display: flex; align-items: center; gap: 10px; }
+.hdr-back { width: 32px; height: 32px; border: none; background: #f5f5f5; border-radius: 8px; cursor: pointer; }
+.hdr-title { flex: 1; font-weight: 500; }
+.content { flex: 1; overflow-y: auto; padding: 16px; }
+.btn { padding: 12px 16px; border: none; border-radius: 8px; cursor: pointer; font-size: 14px; font-weight: 500; width: 100%; }
+.btn-primary { background: #0F6E56; color: #fff; }
+.btn-secondary { background: #534AB7; color: #fff; }
+.btn-text { background: none; color: #0066cc; border: none; padding: 8px; font-size: 12px; }
+.btn:disabled { background: #ddd; color: #999; cursor: not-allowed; }
+.input { width: 100%; padding: 10px; border: 1px solid #e0e0e0; border-radius: 8px; font-size: 14px; margin-bottom: 8px; }
+.card { background: #fff; padding: 12px; border: 1px solid #e0e0e0; border-radius: 8px; margin-bottom: 8px; }
+.checkbox-item { display: flex; gap: 10px; padding: 10px 0; border-bottom: 1px solid #f0f0f0; align-items: flex-start; }
+.checkbox-item:last-child { border-bottom: none; }
+.checkbox-item input { width: 20px; height: 20px; margin-top: 2px; }
+.checkbox-item label { flex: 1; cursor: pointer; }
+.note { font-size: 11px; color: #0F6E56; margin-top: 4px; }
+.progress { width: 100%; height: 4px; background: #e0e0e0; border-radius: 2px; overflow: hidden; margin: 8px 0; }
+.progress-bar { height: 100%; background: #0F6E56; }
+.tabs { display: flex; gap: 8px; margin-bottom: 12px; border-bottom: 1px solid #e0e0e0; }
+.tab { padding: 8px 12px; border: none; background: none; cursor: pointer; font-size: 12px; color: #999; border-bottom: 2px solid transparent; }
+.tab.on { color: #0F6E56; border-bottom-color: #0F6E56; }
+.staff-item { display: flex; align-items: center; gap: 10px; padding: 10px 0; border-bottom: 1px solid #f0f0f0; }
+.staff-item:last-child { border-bottom: none; }
+.staff-del { background: #fee; color: #c33; border: none; padding: 4px 8px; border-radius: 4px; cursor: pointer; font-size: 11px; }
+.warning { background: #fee; border: 1px solid #f7c1c1; border-radius: 8px; padding: 10px; color: #c33; font-size: 12px; margin-bottom: 12px; }
+.badge { display: inline-block; background: #e1f5ee; color: #0F6E56; padding: 2px 6px; border-radius: 4px; font-size: 10px; font-weight: 500; }
+.cl-list { max-height: 300px; overflow-y: auto; }
+.cl-item { display: flex; gap: 8px; padding: 8px 0; border-bottom: 1px solid #f0f0f0; align-items: center; font-size: 13px; }
+.cl-item:last-child { border-bottom: none; }
+.cl-check { color: #0F6E56; }
+.cl-unchecked { color: #ccc; }
+.cl-staff { font-size: 11px; color: #0F6E56; margin-top: 2px; }
 </style>
 </head>
 <body>
-<div class="toast" id="toast"></div>
 
 <!-- HOME -->
-<div id="home-scr" class="scr on">
-  <div class="h-hero">
-    <p class="h-eye">DAILY CHECK</p>
-    <h1 class="h-h1">Daily Check</h1>
-    <p class="h-date" id="home-dt"></p>
-  </div>
-  <div class="h-cards">
-    <button class="mc" onclick="startMode('opening')">
-      <div class="mc-tm" style="color:var(--op)">MORNING</div>
-      <div class="mc-nm">開店前チェック</div>
-      <div class="mc-sb">23項目 · HACCP 7項目含む</div>
-      <div class="mc-tags">
-        <span class="tag" style="color:#A32D2D;border-color:#E24B4A;background:#FCEBEB">HACCP</span>
-        <span class="tag" style="color:#633806;border-color:#EF9F27;background:#FAEEDA">キッチン</span>
-        <span class="tag" style="color:#085041;border-color:#1D9E75;background:#E1F5EE">ホール</span>
-      </div>
-    </button>
-    <button class="mc" onclick="startMode('closing')">
-      <div class="mc-tm" style="color:var(--cl)">NIGHT</div>
-      <div class="mc-nm">締め作業チェック</div>
-      <div class="mc-sb">14項目 · HACCP 3項目含む</div>
-      <div class="mc-tags">
-        <span class="tag" style="color:#633806;border-color:#EF9F27;background:#FAEEDA">設備</span>
-        <span class="tag" style="color:#085041;border-color:#1D9E75;background:#E1F5EE">清掃</span>
-        <span class="tag" style="color:#3C3489;border-color:#7F77DD;background:#EEEDFE">衛生</span>
-      </div>
-    </button>
-  </div>
-  <div class="h-bottom">
-    <!-- DEBUG BUTTON -->
-    <button onclick="toggleDebug()" style="padding:8px 12px;border-radius:8px;background:#f5f5f5;border:0.5px solid #e5e5e5;color:#999;font-size:11px;cursor:pointer;text-align:center">
-      🔧 デバッグ情報
-    </button>
-    
-    <!-- STATS WIDGET -->
-    <div class="stat-widget" id="stat-widget" style="display:none">
-      <div style="font-size:11px;font-weight:500;color:#666;letter-spacing:.1em;margin-bottom:10px">TODAY'S SUMMARY</div>
-      <div class="stat-grid" id="stat-grid"></div>
-    </div>
-
-    <!-- GAPS WIDGET -->
-    <div class="gap-widget" id="gap-widget" style="display:none">
-      <div class="gap-title">PENDING CHECKS</div>
-      <div class="gap-list" id="gap-list"></div>
-    </div>
-
-    <!-- CHECKLIST SECTION -->
-    <div style="padding:12px 16px 0;display:flex;gap:6px;margin-bottom:8px;overflow-x:auto;scrollbar-width:none">
-      <button class="ft on" id="cl-op-tab" onclick="switchChecklistTab('opening')" style="background:#1a1a1a;color:#fff;border-color:transparent">🌅 開店前（23）</button>
-      <button class="ft" id="cl-cl-tab" onclick="switchChecklistTab('closing')">🌙 締め作業（14）</button>
+<div id="home" class="scr on">
+  <div class="hdr"><h1 class="hdr-title">Daily Check</h1></div>
+  <div class="content">
+    <div style="padding: 20px 0; text-align: center; margin-bottom: 16px;">
+      <div style="font-size: 36px; margin-bottom: 10px;">📋</div>
+      <h2 style="font-size: 20px;">Daily Check</h2>
     </div>
     
-    <div class="rp" style="margin-bottom:10px">
-      <div class="rp-head">
-        <span class="rp-title">CHECKLIST</span>
-      </div>
-      <div id="cl-list" style="max-height:300px;overflow-y:auto;font-size:12px"></div>
+    <!-- STATS -->
+    <div class="card" style="margin-bottom: 12px;">
+      <div style="font-size: 11px; color: #999; margin-bottom: 8px; font-weight: 500;">本日の状況</div>
+      <div id="home-stats" style="font-size: 13px; color: #666; line-height: 1.6;"></div>
     </div>
 
-    <!-- RECORDS WIDGET -->
-    <div class="rp">
-      <div class="rp-head">
-        <span class="rp-title">TODAY'S RECORDS</span>
-        <button class="rp-btn" onclick="showScr('rec-scr')">詳細 →</button>
+    <!-- CHECKLIST -->
+    <div class="card" style="margin-bottom: 12px;">
+      <div style="font-size: 11px; color: #999; margin-bottom: 8px; font-weight: 500;">CHECKLIST</div>
+      <div class="tabs">
+        <button class="tab on" onclick="switchTab('opening')">🌅 開店前</button>
+        <button class="tab" onclick="switchTab('closing')">🌙 締め作業</button>
       </div>
-      <div id="home-rec"></div>
+      <div class="cl-list" id="cl-list"></div>
     </div>
-    
-    <!-- DUPLICATE WIDGET -->
-    <div class="rp" id="dup-widget" style="display:none;border-left:4px solid #E24B4A">
-      <div class="rp-head">
-        <span class="rp-title">⚠️ 重複チェック</span>
-      </div>
-      <div id="home-dup"></div>
-    </div>
-    <button onclick="showScr('mgr-scr')" style="padding:12px 16px;border-radius:12px;background:#fff;border:0.5px solid #e5e5e5;color:#666;font-size:13px;cursor:pointer;display:flex;align-items:center;gap:8px;justify-content:center;width:100%">
-      <i class="ti ti-users" aria-hidden="true"></i> スタッフ名を管理
-    </button>
+
+    <!-- BUTTONS -->
+    <button class="btn btn-primary" onclick="startMode('opening')" style="margin-bottom: 8px;">🌅 開店前チェック</button>
+    <button class="btn btn-secondary" onclick="startMode('closing')" style="margin-bottom: 8px;">🌙 締め作業チェック</button>
+    <button class="btn-text" onclick="showScr('staff-mgr')">👥 スタッフ管理</button>
   </div>
 </div>
 
-<!-- MANAGER -->
-<div id="mgr-scr" class="scr">
-  <div class="ph">
-    <button class="bk" onclick="showScr('home-scr')"><i class="ti ti-arrow-left" aria-hidden="true"></i></button>
-    <div class="ph-info"><div class="ph-eye">SETTINGS</div><div class="ph-title">スタッフ名の管理</div></div>
+<!-- STAFF MANAGER -->
+<div id="staff-mgr" class="scr">
+  <div class="hdr">
+    <button class="hdr-back" onclick="showScr('home')">←</button>
+    <h1 class="hdr-title">スタッフ管理</h1>
   </div>
-  <div class="mgr-inner">
-    <p style="font-size:12px;color:#666;margin-bottom:16px;line-height:1.6">登録した名前はチェック記入時のクイック選択に表示されます。</p>
-    <div class="sec-label">登録済みスタッフ</div>
-    <div id="mgr-list" style="margin-bottom:20px"></div>
-    <div class="sec-label">新しいスタッフを追加</div>
-    <div class="add-row">
-      <input type="text" id="mgr-inp" placeholder="名前を入力（最大10文字）" maxlength="10" onkeydown="if(event.key==='Enter')addStaff()">
-      <button onclick="addStaff()"><i class="ti ti-plus" aria-hidden="true"></i> 追加</button>
+  <div class="content">
+    <div style="margin-bottom: 16px;">
+      <label style="display: block; font-size: 12px; color: #666; margin-bottom: 4px;">新規追加</label>
+      <div style="display: flex; gap: 8px;">
+        <input type="text" id="staff-add-input" class="input" placeholder="名前" style="flex: 1; margin-bottom: 0;">
+        <button class="btn" style="flex: 0; background: #0F6E56; color: #fff; padding: 10px;" onclick="addStaff()">追加</button>
+      </div>
     </div>
-    <div class="err" id="mgr-err"></div>
-    <div class="hint-box">右のゴミ箱ボタンで削除できます。</div>
+    <div style="font-size: 12px; color: #666; margin-bottom: 8px; font-weight: 500;">登録済みスタッフ</div>
+    <div id="staff-list"></div>
   </div>
 </div>
 
 <!-- STAFF SELECT -->
-<div id="staff-scr" class="scr">
-  <div class="ph">
-    <button class="bk" onclick="showScr('home-scr')"><i class="ti ti-arrow-left" aria-hidden="true"></i></button>
-    <div class="ph-info"><div class="ph-eye" id="st-eye"></div><div class="ph-title" id="st-title"></div></div>
-    <div class="dbadge"><div class="dbadge-s">TODAY</div><div class="dbadge-v" id="st-date"></div></div>
+<div id="staff" class="scr">
+  <div class="hdr">
+    <button class="hdr-back" onclick="showScr('home')">←</button>
+    <h1 class="hdr-title" id="staff-title">記入者選択</h1>
   </div>
-  <div class="st-inner">
-    <div class="st-top">
-      <div class="st-em" id="st-em"></div>
-      <h2 class="st-h">記入者を選んでください</h2>
-      <p class="st-sub" id="st-sub"></p>
+  <div class="content">
+    <div id="staff-warn" class="warning" style="display: none;"></div>
+    <div style="margin-bottom: 16px;">
+      <label style="display: block; font-size: 12px; color: #666; margin-bottom: 4px;">スタッフ名</label>
+      <input type="text" id="staff-input" class="input" placeholder="名前を入力">
+      <div id="staff-err" style="color: #c33; font-size: 12px; display: none;">スタッフ名を入力してください</div>
     </div>
-    <div class="sec-label">登録済みスタッフ</div>
-    <div class="staff-grid" id="st-grid"></div>
-    <div class="sec-label">直接入力</div>
-    <div class="direct-row">
-      <input type="text" id="st-inp" placeholder="名前を入力" autocomplete="off" oninput="onDirect(this.value)" onkeydown="if(event.key==='Enter')toCheck()">
-    </div>
-    <div class="err" id="st-err">記入者を選択または入力してください</div>
-    
-    <!-- 既チェック警告 -->
-    <div id="st-dup-warn" style="display:none;background:#FCEBEB;border:0.5px solid #E24B4A;border-radius:8px;padding:10px 12px;margin-top:12px;font-size:12px;color:#A32D2D">
-      <div style="font-weight:500;margin-bottom:4px">⚠️ 既にチェック済みです</div>
-      <div id="st-dup-msg" style="font-size:11px;color:#993C1D"></div>
-    </div>
-    
-    <button onclick="showScr('mgr-scr')" style="margin-top:8px;font-size:12px;color:#0066cc;background:none;border:none;cursor:pointer;padding:4px 0;display:flex;align-items:center;gap:4px">
-      <i class="ti ti-settings" aria-hidden="true"></i> スタッフ名を追加・編集する
-    </button>
-  </div>
-  <div class="bot">
-    <button class="mb" id="st-btn" onclick="toCheck()" disabled>記入者を選択してください</button>
+    <button class="btn btn-primary" onclick="toCheck()">チェック開始</button>
   </div>
 </div>
 
 <!-- CHECK -->
-<div id="ck-scr" class="scr">
-  <div class="ck-sticky">
-    <div class="ck-hdr">
-      <button class="bk" onclick="showScr('staff-scr')"><i class="ti ti-arrow-left" aria-hidden="true"></i></button>
-      <div class="ck-inf"><div class="ck-mode" id="ck-mode"></div><div class="ck-tt" id="ck-tt"></div></div>
-      <button class="sbadge" onclick="showScr('staff-scr')">
-        <i class="ti ti-user" aria-hidden="true" style="font-size:14px;color:#999"></i>
-        <span class="sbadge-nm" id="sbadge-nm"></span>
-        <span class="sbadge-ed">変更</span>
-      </button>
-    </div>
-    <div class="ftabs" id="ftabs"></div>
-    <div class="prog-row" style="margin-bottom:4px">
-      <span class="prog-lbl" id="hl"></span>
-      <div class="btrack"><div class="bfill" id="hf"></div></div>
-      <span class="prog-ct" id="tc"></span>
-    </div>
-    <div class="btrack"><div class="bfill" id="tf"></div></div>
+<div id="check" class="scr">
+  <div class="hdr">
+    <button class="hdr-back" onclick="showScr('staff')">←</button>
+    <h1 class="hdr-title" id="check-title">チェック入力</h1>
   </div>
-  <div style="flex:1;overflow-y:auto;padding-bottom:80px" id="ck-body"></div>
-  <div class="bot">
-    <button class="mb" id="ck-btn" onclick="showScr('cf-scr');buildConfirm()"></button>
+  <div class="content">
+    <div style="margin-bottom: 12px;">
+      <span id="check-staff" style="font-weight: 500;"></span> - 
+      <span id="check-mode" style="color: #666;"></span>
+    </div>
+    <div class="progress"><div class="progress-bar" id="progress-bar"></div></div>
+    <div style="font-size: 12px; color: #666; margin-bottom: 16px;"><span id="check-count"></span></div>
+    <div id="check-items"></div>
+  </div>
+  <div style="padding: 12px; border-top: 1px solid #e0e0e0;">
+    <button class="btn btn-primary" onclick="toConfirm()">確認へ</button>
   </div>
 </div>
 
 <!-- CONFIRM -->
-<div id="cf-scr" class="scr">
-  <div class="ph">
-    <button class="bk" onclick="showScr('ck-scr')"><i class="ti ti-arrow-left" aria-hidden="true"></i></button>
-    <div class="ph-info"><div class="ph-eye" id="cf-eye"></div><div class="ph-title" id="cf-tt"></div></div>
+<div id="confirm" class="scr">
+  <div class="hdr">
+    <button class="hdr-back" onclick="showScr('check')">←</button>
+    <h1 class="hdr-title">確認</h1>
   </div>
-  <div class="cf-body" id="cf-body"></div>
-  <div class="bot"><button class="mb" id="send-btn" onclick="handleSend()"></button></div>
-</div>
-
-<!-- RECORDS -->
-<div id="rec-scr" class="scr">
-  <div class="ph">
-    <button class="bk" onclick="showScr('home-scr')"><i class="ti ti-arrow-left" aria-hidden="true"></i></button>
-    <div class="ph-info"><div class="ph-eye">TODAY'S RECORDS</div><div class="ph-title" id="rec-dt"></div></div>
+  <div class="content">
+    <div class="card">
+      <div style="font-size: 12px; color: #666; margin-bottom: 4px;">記入者</div>
+      <div style="font-weight: 500;" id="confirm-staff"></div>
+    </div>
+    <div class="card">
+      <div style="font-size: 12px; color: #666; margin-bottom: 4px;">種別</div>
+      <div style="font-weight: 500;" id="confirm-mode"></div>
+    </div>
+    <div class="card">
+      <div style="font-size: 12px; color: #666; margin-bottom: 4px;">完了率</div>
+      <div style="font-weight: 500;" id="confirm-rate"></div>
+    </div>
   </div>
-  <div style="padding:10px 16px 6px;display:flex;gap:6px">
-    <button class="ft on" id="rf-all" onclick="filterRec('all')" style="background:#1a1a1a;color:#fff;border-color:transparent">すべて</button>
-    <button class="ft" id="rf-op" onclick="filterRec('opening')">🌅 開店前</button>
-    <button class="ft" id="rf-cl" onclick="filterRec('closing')">🌙 締め作業</button>
+  <div style="padding: 12px; border-top: 1px solid #e0e0e0;">
+    <button class="btn btn-primary" id="send-btn" onclick="send()">Notionに記録</button>
   </div>
-  <div style="flex:1;overflow-y:auto;padding:10px 16px 40px" id="rec-body"></div>
 </div>
 
 <!-- DONE -->
-<div id="done-scr" class="scr">
-  <div class="done-in">
-    <div style="font-size:48px;margin-bottom:14px" id="d-ic"></div>
-    <p style="font-size:11px;color:#999;letter-spacing:.1em;margin-bottom:6px">Notion に記録しました</p>
-    <h2 style="font-size:18px;font-weight:500;margin-bottom:4px" id="d-tt"></h2>
-    <p style="font-size:13px;color:#666;margin-bottom:22px" id="d-sb"></p>
-    <div class="done-sg" id="d-sg"></div>
-    <div style="display:flex;flex-direction:column;gap:8px;width:100%;max-width:280px">
-      <button onclick="startMode(currentMode)" style="padding:13px;border-radius:12px;background:#f5f5f5;border:0.5px solid #e5e5e5;color:#666;font-size:13px;cursor:pointer">もう一度入力する</button>
-      <button onclick="showScr('home-scr')" id="d-home" style="padding:13px;border-radius:12px;border:none;color:#fff;font-size:13px;font-weight:500;cursor:pointer">ホームに戻る</button>
-    </div>
+<div id="done" class="scr">
+  <div class="content" style="display: flex; flex-direction: column; justify-content: center; align-items: center;">
+    <div style="font-size: 48px; margin-bottom: 12px;">✅</div>
+    <h2 style="font-size: 18px; margin-bottom: 8px;">記録しました</h2>
+    <p style="color: #666; font-size: 14px; margin-bottom: 20px;">Notionに送信されました</p>
+    <button class="btn btn-primary" onclick="goHome()" style="max-width: 200px;">ホームに戻る</button>
   </div>
 </div>
 
 <script>
-const GAS_URL="https://script.google.com/macros/s/AKfycbx30eMIQXRUAcyeoH85jygkN0oSBDhchPRYe5IkKwsR29oKsZXbR9jIPcUJ-Efdspt2/exec";
-const STORAGE_KEY="daily-check-staff-v1";
+const GAS_URL = "https://script.google.com/macros/s/AKfycbx30eMIQXRUAcyeoH85jygkN0oSBDhchPRYe5IkKwsR29oKsZXbR9jIPcUJ-Efdspt2/exec";
+const STORAGE_KEY = "daily-check-staffs";
 
-const OPENING_PROPS=["健康確認","手洗い実施","身だしなみ","冷蔵庫温度確認","原材料受入確認","交差汚染防止確認","調理器具殺菌確認","ガス電気点検","湯沸かし","作業場清掃消毒","ハイター済タオル干し","仕込み在庫補充","食洗機作動確認","ビールサーバー確認","ドリンク在庫補充","客席清掃消毒","カトラリー補充","消耗品補充","メニューブック消毒","ソフトクリームサーバー確認","トイレ洗浄消毒","床清掃","風除室清掃"];
-const CLOSING_PROPS=["フライヤー締め","ガスコンロ洗浄","食洗機洗浄締め","ガス栓電源換気扇確認","冷蔵冷凍庫確認","調理器具食器洗浄","調理器具サプライ","作業台清掃","シンク清掃","タオル類回収","タオルスポンジハイター殺菌","翌日タオル準備","コバエ駆除剤セット","ゴミ箱チェック"];
-
-const ITEMS={
-  opening:[
-    {id:"健康確認",label:"健康確認",detail:"体調・検温・傷の有無。発熱・消化器症状は出勤不可",area:"HACCP",isHACCP:true},
-    {id:"手洗い実施",label:"手洗い実施",detail:"石けん30秒以上＋アルコール消毒",area:"HACCP",isHACCP:true},
-    {id:"身だしなみ",label:"身だしなみ",detail:"ユニフォーム・髪・爪・アクセサリー確認",area:"HACCP",isHACCP:true},
-    {id:"冷蔵庫温度確認",label:"冷蔵庫温度確認",detail:"2〜7℃以内か確認",area:"HACCP",isHACCP:true},
-    {id:"原材料受入確認",label:"原材料受入確認",detail:"外観・におい・期限・包装状態確認",area:"HACCP",isHACCP:true},
-    {id:"交差汚染防止確認",label:"交差汚染防止確認",detail:"冷蔵庫保管状態・まな板用途別使い分け確認",area:"HACCP",isHACCP:true},
-    {id:"調理器具殺菌確認",label:"調理器具殺菌確認",detail:"まな板漂白・包丁洗浄消毒確認",area:"HACCP",isHACCP:true},
-    {id:"ガス電気点検",label:"ガス・電気点検",detail:"コンロ・フライヤー・オーブン動作確認",area:"キッチン",isHACCP:false},
-    {id:"湯沸かし",label:"湯沸かし",detail:"お湯を沸かして保温開始",area:"キッチン",isHACCP:false},
-    {id:"作業場清掃消毒",label:"作業場清掃消毒",detail:"調理台・棚・シンク周辺の清掃・消毒",area:"キッチン",isHACCP:false},
-    {id:"ハイター済タオル干し",label:"ハイター済タオル干し",detail:"前日殺菌タオルを干してセット",area:"キッチン",isHACCP:false},
-    {id:"仕込み在庫補充",label:"仕込み在庫補充",detail:"本日営業分の材料確認・補充",area:"キッチン",isHACCP:false},
-    {id:"食洗機作動確認",label:"食洗機作動確認",detail:"動作・洗浄剤残量・試運転確認",area:"キッチン",isHACCP:false},
-    {id:"ビールサーバー確認",label:"ビールサーバー確認",detail:"タップ動作・ガス圧・温度確認。最初の一杯は捨て注ぎ",area:"ホール",isHACCP:false},
-    {id:"ドリンク在庫補充",label:"ドリンク在庫補充",detail:"ボトル・缶・シロップ類確認・補充",area:"ホール",isHACCP:false},
-    {id:"客席清掃消毒",label:"客席清掃消毒",detail:"テーブル・椅子・床の清掃・消毒",area:"ホール",isHACCP:false},
-    {id:"カトラリー補充",label:"カトラリー補充",detail:"フォーク・箸・ナプキン補充・清潔確認",area:"ホール",isHACCP:false},
-    {id:"消耗品補充",label:"消耗品補充",detail:"おしぼり・ウェットティッシュ等補充",area:"ホール",isHACCP:false},
-    {id:"メニューブック消毒",label:"メニューブック消毒",detail:"アルコールで全面拭き消毒",area:"ホール",isHACCP:false},
-    {id:"ソフトクリームサーバー確認",label:"ソフトクリームサーバー",detail:"動作・温度・清潔状態確認",area:"ホール",isHACCP:false},
-    {id:"トイレ洗浄消毒",label:"トイレ洗浄消毒",detail:"専用エプロン着用・便座・ドアノブ等消毒",area:"ホール",isHACCP:false},
-    {id:"床清掃",label:"床清掃",detail:"ホール・通路 掃き・モップがけ",area:"ホール",isHACCP:false},
-    {id:"風除室清掃",label:"風除室清掃",detail:"入口・ガラス・マット清掃",area:"ホール",isHACCP:false},
+const ITEMS = {
+  opening: [
+    {id: "健康確認", label: "健康確認", detail: "体調・検温・傷の有無"},
+    {id: "手洗い実施", label: "手洗い実施", detail: "石けん30秒以上＋消毒"},
+    {id: "身だしなみ", label: "身だしなみ", detail: "ユニフォーム・髪・爪確認"},
+    {id: "冷蔵庫温度確認", label: "冷蔵庫温度確認", detail: "2～7℃以内"},
+    {id: "原材料受入確認", label: "原材料受入確認", detail: "外観・におい・期限確認"},
+    {id: "交差汚染防止確認", label: "交差汚染防止確認", detail: "保管状態・まな板確認"},
+    {id: "調理器具殺菌確認", label: "調理器具殺菌確認", detail: "漂白・洗浄消毒確認"},
+    {id: "ガス電気点検", label: "ガス・電気点検", detail: "動作確認"},
+    {id: "湯沸かし", label: "湯沸かし", detail: "お湯を沸かす"},
+    {id: "作業場清掃消毒", label: "作業場清掃消毒", detail: "調理台・棚清掃"},
+    {id: "ハイター済タオル干し", label: "ハイター済タオル干し", detail: "タオル準備"},
+    {id: "仕込み在庫補充", label: "仕込み在庫補充", detail: "材料確認"},
+    {id: "食洗機作動確認", label: "食洗機作動確認", detail: "動作確認"},
+    {id: "ビールサーバー確認", label: "ビールサーバー確認", detail: "温度確認"},
+    {id: "ドリンク在庫補充", label: "ドリンク在庫補充", detail: "在庫補充"},
+    {id: "客席清掃消毒", label: "客席清掃消毒", detail: "テーブル・椅子清掃"},
+    {id: "カトラリー補充", label: "カトラリー補充", detail: "補充確認"},
+    {id: "消耗品補充", label: "消耗品補充", detail: "補充"},
+    {id: "メニューブック消毒", label: "メニューブック消毒", detail: "消毒"},
+    {id: "ソフトクリームサーバー確認", label: "ソフトクリーム確認", detail: "動作確認"},
+    {id: "トイレ洗浄消毒", label: "トイレ洗浄消毒", detail: "消毒"},
+    {id: "床清掃", label: "床清掃", detail: "モップがけ"},
+    {id: "風除室清掃", label: "風除室清掃", detail: "清掃"},
   ],
-  closing:[
-    {id:"フライヤー締め",label:"フライヤー締め",detail:"電源OFF・ガス栓・バスケット等洗浄",area:"設備",isHACCP:false},
-    {id:"ガスコンロ洗浄",label:"ガスコンロ洗浄",detail:"コンロ全体・五徳・バーナーキャップ清掃",area:"設備",isHACCP:false},
-    {id:"食洗機洗浄締め",label:"食洗機洗浄・締め",detail:"内部洗浄・最終運転後の締め",area:"設備",isHACCP:false},
-    {id:"ガス栓電源換気扇確認",label:"ガス栓・電源・換気扇",detail:"全ガス栓閉・不要電源OFF・換気扇停止確認",area:"設備",isHACCP:false},
-    {id:"冷蔵冷凍庫確認",label:"冷蔵・冷凍庫確認",detail:"扉閉確認・温度異常チェック。異常時は管理者に報告",area:"安全",isHACCP:true},
-    {id:"調理器具食器洗浄",label:"調理器具・食器洗浄",detail:"使用した調理器具・食器類の洗浄・乾燥",area:"清掃",isHACCP:false},
-    {id:"調理器具サプライ",label:"調理器具サプライ",detail:"翌日分の器具・食器類を所定の場所にセット",area:"清掃",isHACCP:false},
-    {id:"作業台清掃",label:"作業台清掃",detail:"調理作業台の消毒・清掃",area:"清掃",isHACCP:true},
-    {id:"シンク清掃",label:"シンク清掃",detail:"シンク内部・排水口の清掃",area:"清掃",isHACCP:false},
-    {id:"タオル類回収",label:"タオル類回収",detail:"使用済みタオル類を回収してまとめる",area:"清掃",isHACCP:false},
-    {id:"タオルスポンジハイター殺菌",label:"タオル・スポンジ殺菌",detail:"ハイターで殺菌処理・翌日まで漬け置き",area:"衛生",isHACCP:true},
-    {id:"翌日タオル準備",label:"翌日タオル準備",detail:"翌日使用タオル類を所定の場所に準備",area:"衛生",isHACCP:false},
-    {id:"コバエ駆除剤セット",label:"コバエ駆除剤セット",detail:"所定の場所にコバエ駆除剤をセット",area:"衛生",isHACCP:false},
-    {id:"ゴミ箱チェック",label:"ゴミ箱チェック",detail:"ゴミをまとめて厨房裏通路へ。ゴミ箱汚れは清掃",area:"ゴミ",isHACCP:false},
+  closing: [
+    {id: "フライヤー締め", label: "フライヤー締め", detail: "電源OFF"},
+    {id: "ガスコンロ洗浄", label: "ガスコンロ洗浄", detail: "清掃"},
+    {id: "食洗機洗浄締め", label: "食洗機洗浄・締め", detail: "洗浄"},
+    {id: "ガス栓電源換気扇確認", label: "ガス栓・電源・換気扇", detail: "確認"},
+    {id: "冷蔵冷凍庫確認", label: "冷蔵・冷凍庫確認", detail: "確認"},
+    {id: "調理器具食器洗浄", label: "調理器具・食器洗浄", detail: "洗浄"},
+    {id: "調理器具サプライ", label: "調理器具サプライ", detail: "準備"},
+    {id: "作業台清掃", label: "作業台清掃", detail: "清掃"},
+    {id: "シンク清掃", label: "シンク清掃", detail: "清掃"},
+    {id: "タオル類回収", label: "タオル類回収", detail: "回収"},
+    {id: "タオルスポンジハイター殺菌", label: "タオル・スポンジ殺菌", detail: "殺菌"},
+    {id: "翌日タオル準備", label: "翌日タオル準備", detail: "準備"},
+    {id: "コバエ駆除剤セット", label: "コバエ駆除剤セット", detail: "セット"},
+    {id: "ゴミ箱チェック", label: "ゴミ箱チェック", detail: "確認"},
   ]
 };
 
-const AS={
-  HACCP:{c:"#A32D2D",bg:"#FCEBEB",bd:"#E24B4A"},
-  キッチン:{c:"#633806",bg:"#FAEEDA",bd:"#EF9F27"},
-  ホール:{c:"#085041",bg:"#E1F5EE",bd:"#1D9E75"},
-  設備:{c:"#633806",bg:"#FAEEDA",bd:"#EF9F27"},
-  安全:{c:"#A32D2D",bg:"#FCEBEB",bd:"#E24B4A"},
-  清掃:{c:"#085041",bg:"#E1F5EE",bd:"#1D9E75"},
-  衛生:{c:"#3C3489",bg:"#EEEDFE",bd:"#7F77DD"},
-  ゴミ:{c:"#444441",bg:"#F1EFE8",bd:"#B4B2A9"},
-};
+let currentMode = null;
+let currentTab = "opening";
+let staff = "";
+let checks = {};
+let staffs = [];
+let notionRecords = [];
 
-let currentMode=null,today={},items=[],checks={},staff="",filter="all",sending=false,records=[],notionRecords=[],checklistMode="opening";
-let staffNames=[];
-
-function getToday(){
-  const d=new Date();
-  return{
-    iso:d.toISOString().split("T")[0],
-    jp:d.toLocaleDateString("ja-JP",{year:"numeric",month:"long",day:"numeric",weekday:"short"}),
-    time:d.toLocaleTimeString("ja-JP",{hour:"2-digit",minute:"2-digit"}),
-  };
-}
-const aHex=()=>currentMode==="opening"?"#0F6E56":"#534AB7";
-const mLabel=()=>currentMode==="opening"?"開店前チェック":"締め作業チェック";
-const tLabel=()=>currentMode==="opening"?"MORNING":"NIGHT";
-
-function showScr(id){
-  document.querySelectorAll(".scr").forEach(s=>{s.classList.remove("on");s.style.display="";});
-  const t=document.getElementById(id);
-  t.classList.add("on");t.style.display="flex";
-  t.scrollTop=0;
+function showScr(id) {
+  document.querySelectorAll(".scr").forEach(s => s.classList.remove("on"));
+  document.getElementById(id).classList.add("on");
 }
 
-/**
- * デバッグ情報を表示
- */
-function toggleDebug(){
-  const msg=`
-📋 デバッグ情報
-━━━━━━━━━━━━━━━━━━━━━━━━━━━
-
-✓ GAS URL: ${GAS_URL}
-✓ 本日: ${today.iso}
-
-【アプリデータ】
-  Notionレコード: ${notionRecords.length}件
-  ローカルrecords: ${records.length}件
-  登録スタッフ: ${staffNames.length}人
-
-【Notionデータ詳細】
-${notionRecords.length>0?notionRecords.map((r,i)=>`
-[${i+1}] ${r.staff}
-    モード: ${r.mode==="opening"?"🌅 開店前":"🌙 締め作業"}
-    完了: ${r.checks?.completed||0}/${r.checks?.total||0}
-    Status: ${r.status||"未設定"}
-    Date: ${r.date}`).join(""):"(記録なし)"}
-
-【登録済みスタッフ】
-${staffNames.length>0?staffNames.map((s,i)=>`[${i+1}] ${s}`).join("\n"):"(未登録)"}
-
-【トラブルシューティング】
-✓ 本記事のコンソール(F12)でエラー確認
-✓ GASエディタ実行ログで testFetchToday() 確認`;
-
-  alert(msg);
-  console.log("=== FULL DEBUG INFO ===");
-  console.log("GAS_URL:", GAS_URL);
-  console.log("notionRecords:", notionRecords);
-  console.log("records:", records);
-  console.log("staffNames:", staffNames);
-  console.log("today:", today);
+function loadStaffs() {
+  try {
+    const saved = localStorage.getItem(STORAGE_KEY);
+    staffs = saved ? JSON.parse(saved) : [];
+  } catch (e) {
+    staffs = [];
+  }
+  renderStaffList();
 }
 
-/**
- * チェックリストタブを切り替え
- */
-function switchChecklistTab(mode){
-  checklistMode=mode;
-  ["cl-op-tab","cl-cl-tab"].forEach(id=>{
-    const btn=document.getElementById(id);
-    btn.classList.remove("on");
-    btn.style.background="transparent";btn.style.color="#666";btn.style.borderColor="#e0e0e0";
-  });
-  const tab=document.getElementById(mode==="opening"?"cl-op-tab":"cl-cl-tab");
-  tab.classList.add("on");
-  tab.style.background="#1a1a1a";tab.style.color="#fff";tab.style.borderColor="transparent";
+function saveStaffs() {
+  localStorage.setItem(STORAGE_KEY, JSON.stringify(staffs));
+}
+
+function addStaff() {
+  const inp = document.getElementById("staff-add-input");
+  const name = inp.value.trim();
+  if (!name) return;
+  if (staffs.includes(name)) {
+    alert("既に登録されています");
+    return;
+  }
+  staffs.push(name);
+  saveStaffs();
+  inp.value = "";
+  renderStaffList();
+}
+
+function delStaff(name) {
+  staffs = staffs.filter(s => s !== name);
+  saveStaffs();
+  renderStaffList();
+}
+
+function renderStaffList() {
+  const html = staffs.map(s => `
+    <div class="staff-item">
+      <span style="flex: 1;">${s}</span>
+      <button class="staff-del" onclick="delStaff('${s}')">削除</button>
+    </div>
+  `).join("");
+  document.getElementById("staff-list").innerHTML = html || "<div style='color: #999; font-size: 12px;'>登録済みスタッフなし</div>";
+}
+
+function switchTab(mode) {
+  currentTab = mode;
+  document.querySelectorAll(".tab").forEach(t => t.classList.remove("on"));
+  event.target.classList.add("on");
   renderChecklist();
 }
 
-/**
- * チェックリストをレンダリング
- */
-function renderChecklist(){
-  const el=document.getElementById("cl-list");
-  if(!el) return; // 要素がない場合は何もしない
-  
-  const modeItems=ITEMS[checklistMode]||[];
-  console.log("renderChecklist - mode:", checklistMode, "items count:", modeItems.length);
-  
-  // スタッフ×モード別のチェック状態を整理
-  const itemStatus={};
-  modeItems.forEach(item=>{
-    itemStatus[item.id]={label:item.label,checkers:[]};
-  });
-  
-  // Notionレコードからチェック状態を抽出
-  if(Array.isArray(notionRecords)){
-    notionRecords.forEach(rec=>{
-      if(rec.mode===checklistMode&&rec.checks?.items){
-        Object.keys(rec.checks.items).forEach(itemId=>{
-          if(rec.checks.items[itemId]&&itemStatus[itemId]){
-            itemStatus[itemId].checkers.push(rec.staff);
-          }
-        });
-      }
+async function loadTodayRecords() {
+  try {
+    const res = await fetch(GAS_URL, {
+      method: "POST",
+      headers: {"Content-Type": "text/plain"},
+      body: JSON.stringify({action: "fetchTodayRecords"})
     });
-  }
-  
-  // レンダリング
-  el.innerHTML=modeItems.map(item=>{
-    const status=itemStatus[item.id];
-    const isChecked=status.checkers.length>0;
-    const as=AS[item.area]||AS["ゴミ"];
-    
-    return`<div style="padding:8px 0;border-bottom:0.5px solid #f0f0f0;display:flex;align-items:center;gap:8px">
-      <div style="color:${isChecked?as.c:"#ccc"};font-size:14px;min-width:16px;text-align:center">${isChecked?"✅":"○"}</div>
-      <div style="flex:1;min-width:0">
-        <div style="font-size:12px;font-weight:500;color:${isChecked?"#333":"#999"}">${item.label}</div>
-        <div style="font-size:10px;color:${isChecked?"#666":"#ccc"};margin-top:2px">${status.checkers.length>0?status.checkers.join(" / "):"-"}</div>
-      </div>
-      <span class="tag" style="font-size:9px;color:${as.c};border-color:${as.bd};background:${as.bg};margin:0;flex-shrink:0">${item.area}</span>
-    </div>`;
-  }).join("");
-}
-  const msg=`
-📊 デバッグ情報
-━━━━━━━━━━━━━━━━━━━━━━━━━
-✓ GAS URL: ${GAS_URL}
-✓ 本日: ${today.iso}
-
-【アプリデータ】
-  Notionレコード: ${notionRecords.length}件
-  ローカルrecords: ${records.length}件
-  登録スタッフ: ${staffNames.length}人
-
-【Notionデータ詳細】
-${notionRecords.length>0?notionRecords.map((r,i)=>`
-[${i+1}] ${r.staff}
-    モード: ${r.mode==="opening"?"🌅 開店前":"🌙 締め作業"}
-    完了: ${r.checks?.completed||0}/${r.checks?.total||0}
-    Status: ${r.status||"未設定"}
-    Date: ${r.date}`).join(""):"(記録なし)"}
-
-【登録済みスタッフ】
-${staffNames.length>0?staffNames.map((s,i)=>`[${i+1}] ${s}`).join("\n"):"(未登録)"}
-
-【トラブルシューティング】
-✓ 本記事のコンソール(F12)でエラー確認
-✓ GASエディタ実行ログで testFetchToday() 確認`;
-
-  alert(msg);
-  console.log("=== FULL DEBUG INFO ===");
-  console.log("GAS_URL:", GAS_URL);
-  console.log("notionRecords:", notionRecords);
-  console.log("records:", records);
-  console.log("staffNames:", staffNames);
-  console.log("today:", today);
-}
-
-function loadNames(){
-  try{const s=localStorage.getItem(STORAGE_KEY);if(s)staffNames=JSON.parse(s)||[];}catch(_){}
-}
-function saveNames(){
-  try{localStorage.setItem(STORAGE_KEY,JSON.stringify(staffNames));}catch(_){}
-}
-
-/**
- * GASからNotionの本日記録を取得
- */
-async function loadTodayRecords(){
-  try{
-    // POSTリクエストで action を送信
-    const res=await fetch(GAS_URL,{
-      method:"POST",
-      headers:{"Content-Type":"text/plain"},
-      body:JSON.stringify({action:"fetchTodayRecords"})
-    });
-    const data=await res.json();
-    console.log("Notion Records:", data);
-    
-    if(data.ok && data.data){
-      notionRecords=data.data.opening.concat(data.data.closing);
-      console.log("Loaded " + notionRecords.length + " records from Notion");
-      renderGaps();
-      renderStats();
+    const data = await res.json();
+    if (data.ok && data.data) {
+      notionRecords = [...(data.data.opening || []), ...(data.data.closing || [])];
       renderChecklist();
-      renderHomeRec();
-      return true;
-    } else {
-      console.warn("API returned error:", data.error);
+      renderStats();
     }
-  }catch(err){
-    console.error("Notion記録取得エラー:",err);
+  } catch (err) {
+    console.log("Load error:", err);
   }
-  return false;
 }
 
-/**
- * 未完了チェック（ギャップ）を表示
- */
-function renderGaps(){
-  const gapEl=document.getElementById("gap-list");
-  console.log("renderGaps - notionRecords:", notionRecords);
-  
-  if(!notionRecords.length){
-    document.getElementById("gap-widget").style.display="none";
-    console.log("renderGaps - no Notion records");
+function renderStats() {
+  if (!notionRecords.length) {
+    document.getElementById("home-stats").innerHTML = "<div style='color: #999;'>本日のチェック記録なし</div>";
     return;
   }
+  const opening = notionRecords.filter(r => r.mode === "opening");
+  const closing = notionRecords.filter(r => r.mode === "closing");
+  document.getElementById("home-stats").innerHTML = `
+    <div>🌅 開店前: ${opening.length}件</div>
+    <div>🌙 締め作業: ${closing.length}件</div>
+    <div style="margin-top: 4px;">計: ${notionRecords.length}件</div>
+  `;
+}
 
-  // 本日チェック済み：(スタッフ, モード) の組み合わせ
-  const completed=new Set(notionRecords.map(r=>r.staff+"__"+r.mode));
-  console.log("Completed records:", Array.from(completed));
-
-  // 未完了：登録済みスタッフ × 2モード
-  const gaps=[];
-  staffNames.forEach(s=>{
-    const oKey=s+"__opening";
-    const cKey=s+"__closing";
-    if(!completed.has(oKey)) gaps.push({staff:s,mode:"opening",label:"🌅 開店前"});
-    if(!completed.has(cKey)) gaps.push({staff:s,mode:"closing",label:"🌙 締め作業"});
+function renderChecklist() {
+  const items = ITEMS[currentTab];
+  const itemStatus = {};
+  items.forEach(item => {
+    itemStatus[item.id] = [];
   });
-
-  console.log("Gaps found:", gaps);
   
-  document.getElementById("gap-widget").style.display=gaps.length?"block":"none";
-  if(gaps.length){
-    gapEl.innerHTML=gaps.slice(0,5).map(g=>`
-      <div class="gap-item">
-        <i class="ti ti-alert-circle" aria-hidden="true"></i>
-        <span><strong>${g.staff}</strong> — ${g.label}</span>
-      </div>`).join("");
-    if(gaps.length>5) gapEl.innerHTML+=`<div style="font-size:11px;color:#999;text-align:center;margin-top:6px">+${gaps.length-5}件</div>`;
-  } else {
-    gapEl.innerHTML=`<div class="gap-empty">✅ 本日のチェック完了</div>`;
-  }
-}
-
-/**
- * 本日の統計を表示
- */
-function renderStats(){
-  console.log("renderStats - notionRecords:", notionRecords);
-  
-  if(!notionRecords.length){
-    document.getElementById("stat-widget").style.display="none";
-    console.log("renderStats - no records");
-    return;
-  }
-
-  const total=notionRecords.length;
-  const opening=notionRecords.filter(r=>r.mode==="opening").length;
-  const closing=notionRecords.filter(r=>r.mode==="closing").length;
-  const fullComplete=notionRecords.filter(r=>r.checks.completed===r.checks.total).length;
-
-  console.log("Stats - Total:", total, "Opening:", opening, "Closing:", closing, "Full:", fullComplete);
-
-  document.getElementById("stat-widget").style.display="block";
-  document.getElementById("stat-grid").innerHTML=`
-    <div class="stat-box">
-      <div class="stat-lbl">本日チェック数</div>
-      <div class="stat-val">${total}</div>
-      <div class="stat-sub">件</div>
-    </div>
-    <div class="stat-box">
-      <div class="stat-lbl">開店前</div>
-      <div class="stat-val">${opening}</div>
-      <div class="stat-sub">件完了</div>
-    </div>
-    <div class="stat-box">
-      <div class="stat-lbl">締め作業</div>
-      <div class="stat-val">${closing}</div>
-      <div class="stat-sub">件完了</div>
-    </div>
-    <div class="stat-box">
-      <div class="stat-lbl">100%完了</div>
-      <div class="stat-val" style="color:${fullComplete===total?"#0F6E56":"#A32D2D"}">${fullComplete}</div>
-      <div class="stat-sub">件</div>
-    </div>`;
-}
-
-function renderHomeRec(){
-  const el=document.getElementById("home-rec");
-  const sourceRecs=notionRecords.length>0?notionRecords:records;
-  console.log("renderHomeRec - sourceRecs:", sourceRecs);
-  
-  if(!sourceRecs.length){
-    el.innerHTML='<div class="rp-empty">記録はまだありません</div>';
-    document.getElementById("dup-widget").style.display="none";
-    return;
-  }
-
-  // スタッフ×モード別にグループ化
-  const groupedByStaffMode={};
-  sourceRecs.forEach(r=>{
-    const key=r.staff+"__"+r.mode;
-    if(!groupedByStaffMode[key]) groupedByStaffMode[key]=[];
-    groupedByStaffMode[key].push(r);
-  });
-
-  // 重複チェック
-  const duplicates=Object.keys(groupedByStaffMode).filter(k=>groupedByStaffMode[k].length>1);
-  
-  // 通常表示（重複なし）
-  const normalRecs=[];
-  Object.keys(groupedByStaffMode).forEach(key=>{
-    if(groupedByStaffMode[key].length===1){
-      normalRecs.push(groupedByStaffMode[key][0]);
+  notionRecords.forEach(rec => {
+    if (rec.mode === currentTab && rec.checks?.items) {
+      Object.keys(rec.checks.items).forEach(itemId => {
+        if (rec.checks.items[itemId] && itemStatus[itemId]) {
+          itemStatus[itemId].push(rec.staff);
+        }
+      });
     }
   });
-
-  // 通常表示をレンダリング
-  el.innerHTML=normalRecs.map(r=>{
-    const mode=r.mode||"opening";
-    const col=mode==="opening"?"#0F6E56":"#534AB7";
-    const cd=r.checks?.completed||0;
-    const ct=r.checks?.total||1;
-    const pct=Math.round(cd/ct*100);
-    const status=pct===100?"✅":"⚠️";
-    return`<div class="rp-row">
-      <div style="display:flex;align-items:center;gap:6px;flex:1">
-        <span style="font-size:11px;color:${col};font-weight:500">${mode==="opening"?"🌅 MORNING":"🌙 NIGHT"}</span>
-        <span style="font-size:13px;font-weight:500">${r.staff}</span>
-      </div>
-      <div style="display:flex;align-items:center;gap:8px">
-        <div style="text-align:right;min-width:50px">
-          <div style="font-size:11px;color:#999">${status}</div>
-          <div style="font-size:12px;font-weight:500;color:${pct===100?col:"#A32D2D"}">${cd}/${ct}</div>
+  
+  const html = items.map(item => {
+    const checkers = itemStatus[item.id] || [];
+    return `
+      <div class="cl-item">
+        <span class="${checkers.length > 0 ? 'cl-check' : 'cl-unchecked'}">${checkers.length > 0 ? '✅' : '○'}</span>
+        <div style="flex: 1;">
+          <div style="font-weight: 500;">${item.label}</div>
+          ${checkers.length > 0 ? `<div class="cl-staff">${checkers.join(' / ')}</div>` : ''}
         </div>
       </div>
-    </div>`;
+    `;
   }).join("");
-
-  if(!normalRecs.length){
-    el.innerHTML='<div class="rp-empty">記録はまだありません</div>';
-  }
-
-  // 重複表示
-  const dupEl=document.getElementById("dup-widget");
-  const dupInnerEl=document.getElementById("home-dup");
-  
-  if(duplicates.length>0){
-    dupEl.style.display="block";
-    dupInnerEl.innerHTML=duplicates.map(key=>{
-      const [staff,mode]=key.split("__");
-      const recs=groupedByStaffMode[key];
-      const col=mode==="opening"?"#0F6E56":"#534AB7";
-      return`<div style="padding:8px 0;border-bottom:0.5px solid #f0f0f0">
-        <div style="display:flex;align-items:center;gap:6px;margin-bottom:4px">
-          <span style="font-size:11px;color:${col};font-weight:500">${mode==="opening"?"🌅 MORNING":"🌙 NIGHT"}</span>
-          <span style="font-size:13px;font-weight:500">${staff}</span>
-          <span style="font-size:10px;color:#fff;background:#E24B4A;padding:2px 6px;border-radius:4px">${recs.length}回</span>
-        </div>
-        <div style="font-size:11px;color:#666;margin-left:4px">
-          ${recs.map((r,i)=>`${i+1}. ${r.date||today.iso} (${r.checks?.completed}/${r.checks?.total})`).join(" / ")}
-        </div>
-      </div>`;
-    }).join("");
-  } else {
-    dupEl.style.display="none";
-  }
+  document.getElementById("cl-list").innerHTML = html;
 }
 
-function renderMgrList(){
-  const el=document.getElementById("mgr-list");
-  if(!staffNames.length){el.innerHTML='<p style="font-size:13px;color:#aaa;padding:8px 0">登録済みのスタッフはいません</p>';return;}
-  el.innerHTML=staffNames.map((n,i)=>`
-    <div class="staff-item">
-      <i class="ti ti-user" aria-hidden="true" style="font-size:16px;color:#999"></i>
-      <span class="staff-item-name">${n}</span>
-      <button class="del-btn" onclick="removeStaff(${i})" aria-label="${n}を削除">
-        <i class="ti ti-trash" aria-hidden="true" style="font-size:15px"></i>
-      </button>
-    </div>`).join("");
+function startMode(m) {
+  currentMode = m;
+  checks = {};
+  staff = "";
+  document.getElementById("staff-title").textContent = (m === "opening" ? "🌅 " : "🌙 ") + (m === "opening" ? "開店前" : "締め作業");
+  document.getElementById("staff-input").value = "";
+  document.getElementById("staff-err").style.display = "none";
+  document.getElementById("staff-warn").style.display = "none";
+  showScr("staff");
 }
 
-function addStaff(){
-  const inp=document.getElementById("mgr-inp");
-  const name=inp.value.trim();
-  const err=document.getElementById("mgr-err");
-  if(!name){err.textContent="名前を入力してください";err.classList.add("on");return;}
-  if(staffNames.includes(name)){err.textContent=`「${name}」はすでに登録されています`;err.classList.add("on");return;}
-  err.classList.remove("on");
-  staffNames.push(name);saveNames();
-  inp.value="";renderMgrList();
-  loadTodayRecords().then(()=>renderGaps());
-  showToast(`「${name}」を登録しました`);
-}
-
-function removeStaff(i){
-  const name=staffNames[i];
-  staffNames.splice(i,1);saveNames();
-  renderMgrList();
-  loadTodayRecords().then(()=>renderGaps());
-  showToast(`「${name}」を削除しました`);
-}
-
-function startMode(m){
-  currentMode=m;items=ITEMS[m];checks={};staff="";filter="all";sending=false;
-  today=getToday();
-  document.getElementById("st-eye").textContent=tLabel();
-  document.getElementById("st-eye").style.color=aHex();
-  document.getElementById("st-title").textContent=mLabel();
-  document.getElementById("st-date").textContent=today.iso;
-  document.getElementById("st-em").textContent=m==="opening"?"🌅":"🌙";
-  document.getElementById("st-sub").textContent=today.jp;
-  document.getElementById("st-inp").value="";
-  document.getElementById("st-err").classList.remove("on");
-  document.getElementById("st-dup-warn").style.display="none";
-  renderStGrid();updateStBtn();
-  showScr("staff-scr");
-}
-
-function renderStGrid(){
-  const grid=document.getElementById("st-grid");
-  const ac=aHex();
-  if(!staffNames.length){
-    grid.innerHTML=`<div style="grid-column:span 2;font-size:12px;color:#aaa">登録済みスタッフがいません。<button onclick="showScr('mgr-scr')" style="color:#0066cc;background:none;border:none;cursor:pointer;font-size:12px">追加する</button></div>`;
-    return;
-  }
-  grid.innerHTML=staffNames.map(n=>`
-    <button class="sg-btn${staff===n?" sel":""}" style="${staff===n?`background:${ac};border-color:${ac};color:#fff`:""}" onclick="selectStaff('${n}')">
-      <i class="ti ti-user" aria-hidden="true" style="font-size:15px;flex-shrink:0"></i>
-      <span style="flex:1;text-align:left">${n}</span>
-      ${staff===n?`<i class="ti ti-check" aria-hidden="true" style="font-size:14px;flex-shrink:0"></i>`:""}
-    </button>`).join("");
-}
-
-function selectStaff(n){
-  staff=n;
-  document.getElementById("st-inp").value="";
-  document.getElementById("st-err").classList.remove("on");
-  checkDuplicate();
-  renderStGrid();updateStBtn();
-}
-
-function onDirect(v){
-  staff=v.trim();
-  document.getElementById("st-err").classList.remove("on");
-  checkDuplicate();
-  renderStGrid();updateStBtn();
-}
-
-/**
- * 既チェック警告を表示
- */
-function checkDuplicate(){
-  const dupWarn=document.getElementById("st-dup-warn");
-  const dupMsg=document.getElementById("st-dup-msg");
-  
-  if(!staff){
-    dupWarn.style.display="none";
+function toCheck() {
+  const inp = document.getElementById("staff-input");
+  const name = inp.value.trim();
+  if (!name) {
+    document.getElementById("staff-err").style.display = "block";
     return;
   }
   
-  // 既にこのスタッフ×モードでチェック済みか確認
-  const alreadyChecked=notionRecords.find(r=>r.staff===staff&&r.mode===currentMode);
-  
-  if(alreadyChecked){
-    dupWarn.style.display="block";
-    dupMsg.innerHTML=`<strong>${staff}</strong>さんは既に<strong>${currentMode==="opening"?"開店前":"締め作業"}</strong>を完了しています<br>本当に記入しますか？`;
-  } else {
-    dupWarn.style.display="none";
+  // 既にチェック済みかチェック
+  const alreadyChecked = notionRecords.find(r => r.staff === name && r.mode === currentMode);
+  if (alreadyChecked) {
+    document.getElementById("staff-warn").innerHTML = `⚠️ <strong>${name}</strong>さんは既に${currentMode === "opening" ? "開店前" : "締め作業"}をチェック済みです。本当に記入しますか？`;
+    document.getElementById("staff-warn").style.display = "block";
   }
-}
-
-function updateStBtn(){
-  const btn=document.getElementById("st-btn");
-  if(staff){
-    btn.disabled=false;btn.style.background=aHex();
-    btn.textContent=`チェック開始 — ${staff} →`;
-  } else {
-    btn.disabled=true;btn.style.background="";
-    btn.textContent="記入者を選択してください";
-  }
-}
-
-function toCheck(){
-  if(!staff){document.getElementById("st-err").classList.add("on");return;}
-  document.getElementById("ck-mode").textContent=tLabel();
-  document.getElementById("ck-mode").style.color=aHex();
-  document.getElementById("ck-tt").textContent=mLabel();
-  document.getElementById("sbadge-nm").textContent=staff;
-  buildFtabs();renderCkBody();
-  showScr("ck-scr");
-}
-
-function buildFtabs(){
-  const areas=[...new Set(items.map(i=>i.area))];
-  const ac=aHex();
-  const fl=[
-    {k:"all",l:"全項目",n:items.length},
-    ...areas.map(a=>({k:a,l:a,n:items.filter(i=>i.area===a).length})),
-    {k:"pending",l:"未完了",n:items.filter(i=>!checks[i.id]).length},
-  ];
-  document.getElementById("ftabs").innerHTML=fl.map(f=>`
-    <button class="ft${filter===f.k?" on":""}" style="${filter===f.k?`background:${ac};color:#fff;border-color:${ac}`:""}" onclick="setF('${f.k}')">${f.l}(${f.n})</button>`).join("");
-}
-
-function setF(f){filter=f;buildFtabs();renderCkBody();}
-
-function renderCkBody(){
-  updBars();buildFtabs();
-  const body=document.getElementById("ck-body");body.innerHTML="";
-  const vis=filter==="all"?items:filter==="pending"?items.filter(i=>!checks[i.id]):items.filter(i=>i.area===filter);
-  if(!vis.length){body.innerHTML='<div style="text-align:center;padding:48px 0;color:#aaa;font-size:13px">該当項目なし</div>';updCkBtn();return;}
   
-  let la=null;
-  vis.forEach(item=>{
-    if(item.area!==la){
-      const as=AS[item.area]||AS["ゴミ"];
-      const d=document.createElement("div");d.className="adiv";
-      d.innerHTML=`<div class="adiv-line"></div><span class="adiv-lbl" style="color:${as.c};background:${as.bg};border-color:${as.bd}">${item.area}</span><div class="adiv-line"></div>`;
-      body.appendChild(d);la=item.area;
-    }
-    const ck=!!checks[item.id];const as=AS[item.area]||AS["ゴミ"];
-    
-    // 既に誰かがこの項目をチェックしたか確認
-    const alreadyChecked=[];
-    notionRecords.forEach(rec=>{
-      if(rec.mode===currentMode&&rec.checks?.items?.[item.id]){
-        alreadyChecked.push(rec.staff);
-      }
-    });
-    
-    const btn=document.createElement("button");
-    btn.className="ci"+(ck?" ck":"");
-    btn.innerHTML=`
-      <div class="ci-box${ck?" on":""}" style="${ck?`background:${as.c}`:""}">
-        ${ck?`<i class="ti ti-check" aria-hidden="true" style="font-size:13px;color:#fff"></i>`:""}
+  staff = name;
+  document.getElementById("check-staff").textContent = staff;
+  document.getElementById("check-mode").textContent = (currentMode === "opening" ? "開店前" : "締め作業");
+  
+  const items = ITEMS[currentMode];
+  const html = items.map(item => {
+    const alreadyDone = notionRecords.find(r => r.mode === currentMode && r.checks?.items?.[item.id]);
+    return `
+      <div class="checkbox-item">
+        <input type="checkbox" id="${item.id}" onchange="updateProgress()">
+        <label for="${item.id}">
+          <div style="font-weight: 500; font-size: 14px;">${item.label}</div>
+          <div style="font-size: 12px; color: #999;">${item.detail}</div>
+          ${alreadyDone ? `<div class="note">✅ 既に記入済み</div>` : ''}
+        </label>
       </div>
-      <div class="ci-tx">
-        <div class="ci-lr">
-          <span class="ci-lb">${item.label}</span>
-          ${item.isHACCP?'<span class="hbg">HACCP</span>':""}
-          <span class="abg">${item.area}</span>
-        </div>
-        <div class="ci-dt">${item.detail}</div>
-        ${alreadyChecked.length>0?`<div style="font-size:11px;color:#0F6E56;margin-top:4px;padding-top:4px;border-top:0.5px solid #e5e5e5">✅ 記入済み: ${alreadyChecked.join(" / ")}</div>`:""}
-      </div>`;
-    btn.onclick=()=>{checks[item.id]=!checks[item.id];renderCkBody();};
-    body.appendChild(btn);
-  });
-  updCkBtn();
+    `;
+  }).join("");
+  document.getElementById("check-items").innerHTML = html;
+  updateProgress();
+  showScr("check");
 }
 
-function updBars(){
-  const hi=items.filter(i=>i.isHACCP),hd=hi.filter(i=>checks[i.id]).length;
-  const cd=items.filter(i=>checks[i.id]).length,ct=items.length;
-  const hok=hd===hi.length;const ac=aHex();
-  document.getElementById("hl").textContent=`HACCP ${hd}/${hi.length}`;
-  document.getElementById("hl").style.color=hok?"#0F6E56":"#A32D2D";
-  document.getElementById("hf").style.width=`${hi.length?Math.round(hd/hi.length*100):0}%`;
-  document.getElementById("hf").style.background=hok?"#0F6E56":"#E24B4A";
-  document.getElementById("tc").textContent=`${cd}/${ct}`;
-  document.getElementById("tf").style.width=`${ct?Math.round(cd/ct*100):0}%`;
-  document.getElementById("tf").style.background=ac;
-}
-
-function updCkBtn(){
-  const btn=document.getElementById("ck-btn");
-  const cd=items.filter(i=>checks[i.id]).length,ct=items.length,pct=Math.round(cd/ct*100);
-  btn.disabled=false;
-  btn.style.background=pct===100?aHex():"#BA7517";
-  btn.textContent=`確認へ（${cd}/${ct}件） →`;
-}
-
-function buildConfirm(){
-  const ac=aHex();
-  document.getElementById("cf-eye").textContent=tLabel();
-  document.getElementById("cf-eye").style.color=ac;
-  document.getElementById("cf-tt").textContent=mLabel();
-  const body=document.getElementById("cf-body");body.innerHTML="";
-  const cd=items.filter(i=>checks[i.id]).length,ct=items.length,pct=Math.round(cd/ct*100);
-  body.innerHTML=`<div style="font-size:16px;font-weight:500;margin-bottom:4px">確認して送信</div>
-    <div style="font-size:12px;color:#666;margin-bottom:16px;line-height:1.6">チェック済み項目がNotionに記録されます。</div>`;
-  const bc=document.createElement("div");bc.className="scard";
-  bc.innerHTML=[
-    {ic:"ti-user",lb:"記入者",vl:staff},
-    {ic:"ti-calendar",lb:"日付",vl:today.jp},
-    {ic:currentMode==="opening"?"ti-sunrise":"ti-moon",lb:"種別",vl:mLabel()},
-    {ic:"ti-chart-bar",lb:"完了",vl:`${cd}/${ct}（${pct}%）`,danger:pct<100},
-  ].map(r=>`<div class="srow"><i class="ti ${r.ic} srow-ic" aria-hidden="true"></i><span class="srow-lb">${r.lb}</span><span class="srow-vl" style="${r.danger?"color:#A32D2D":""}">${r.vl}</span></div>`).join("");
-  body.appendChild(bc);
-  const areas=[...new Set(items.map(i=>i.area))];
-  const ah=document.createElement("div");
-  ah.style.cssText="font-size:11px;color:#999;font-weight:500;letter-spacing:.08em;margin-bottom:8px";
-  ah.textContent="エリア別 完了状況";body.appendChild(ah);
-  areas.forEach(area=>{
-    const as=AS[area]||AS["ゴミ"];
-    const ai=items.filter(i=>i.area===area);
-    const ckd=ai.filter(i=>checks[i.id]),unc=ai.filter(i=>!checks[i.id]);
-    const aok=ckd.length===ai.length;
-    const block=document.createElement("div");block.className="ablock";
-    block.style.borderColor=aok?`${as.bd}88`:"#e5e5e5";
-    block.innerHTML=`<div class="ablock-h"><span style="font-size:13px;font-weight:500;color:${as.c}">${area}</span><span style="font-size:13px;font-weight:500;color:${aok?as.c:"#A32D2D"}">${ckd.length}/${ai.length}</span></div>
-    <div class="ablock-p">
-      ${ckd.map(i=>`<span class="pill" style="background:${as.bg};color:${as.c};border:0.5px solid ${as.bd}">✓ ${i.label}</span>`).join("")}
-      ${unc.map(i=>`<span class="pill pill-ng">${i.label}</span>`).join("")}
-    </div>`;
-    body.appendChild(block);
-  });
-  const hi=items.filter(i=>i.isHACCP),hd=hi.filter(i=>checks[i.id]).length,hok=hd===hi.length;
-  const hb=document.createElement("div");hb.className="hblock";
-  hb.style.background=hok?"#E1F5EE":"#FCEBEB";hb.style.borderColor=hok?"#9FE1CB":"#F7C1C1";
-  hb.innerHTML=`<div style="font-size:12px;font-weight:500;color:${hok?"#0F6E56":"#A32D2D"};margin-bottom:${hok?0:6}px">${hok?"✅ HACCP 全項目完了":"⚠️ HACCP 未完了あり"}</div>
-  ${!hok?hi.filter(i=>!checks[i.id]).map(i=>`<div style="font-size:12px;color:#993C1D;margin-top:3px;padding-left:4px">・${i.label}</div>`).join(""):""}`;
-  body.appendChild(hb);
-  const ft=document.createElement("div");ft.style.cssText="font-size:11px;color:#aaa;text-align:center;margin-top:8px";
-  ft.textContent="確認者（小沢健人）はNotionの承認ビューで対応します";body.appendChild(ft);
-  updSendBtn();
-}
-
-function updSendBtn(){
-  const btn=document.getElementById("send-btn");
-  const cd=items.filter(i=>checks[i.id]).length,ct=items.length,pct=Math.round(cd/ct*100);
-  btn.disabled=sending;
-  btn.style.background=sending?"#e0e0e0":pct===100?aHex():"#BA7517";
-  btn.textContent=sending?"Notionに送信中...":pct===100?"✓ 全完了 — Notionに記録する":`${cd}/${ct}件完了 — 記録する`;
-}
-
-async function handleSend(){
-  if(sending)return;
-  sending=true;updSendBtn();
-  const cd=items.filter(i=>checks[i.id]).length,ct=items.length;
-  const haccpOk=items.filter(i=>i.isHACCP).every(i=>checks[i.id]);
-  const props=currentMode==="opening"?OPENING_PROPS:CLOSING_PROPS;
-  const checksObj={};props.forEach(k=>{checksObj[k]=!!checks[k];});
-  const payload={mode:currentMode,date:today.iso,staff,status:haccpOk?"✅ 完了":"⚠️ 要確認",memo:"",checks:checksObj};
-  let ok=false;
-  try{
-    const res=await fetch(GAS_URL,{method:"POST",headers:{"Content-Type":"text/plain"},body:JSON.stringify(payload)});
-    const data=await res.json();ok=data.ok===true;
-  }catch(err){console.error("送信エラー:",err);}
-  records.push({mode:currentMode,staff,cd,ct,time:today.time,checkedItems:items.filter(i=>checks[i.id]).map(i=>i.id),ok});
-  sending=false;
-  showDone(cd,ct,haccpOk,ok);
-}
-
-function showDone(cd,ct,haccpOk,notionOk){
-  const ac=aHex(),pct=Math.round(cd/ct*100);
-  document.getElementById("d-ic").textContent=pct===100?"✅":"⚠️";
-  document.getElementById("d-tt").textContent=mLabel();
-  document.getElementById("d-sb").textContent=`${today.jp} · ${staff}`;
-  document.getElementById("d-home").style.background=ac;
-  document.getElementById("d-sg").innerHTML=[
-    {l:"完了率",v:`${pct}%`,danger:pct<100},
-    {l:"HACCP",v:haccpOk?"全完了":"未完了あり",danger:!haccpOk},
-    {l:"完了項目",v:`${cd}件`,danger:false},
-    {l:"Notion",v:notionOk?"✓ 記録済み":"要確認",danger:!notionOk},
-  ].map(s=>`<div class="done-st"><div class="done-sl">${s.l}</div><div class="done-sv" style="color:${s.danger?"#A32D2D":ac}">${s.v}</div></div>`).join("");
+function updateProgress() {
+  const items = ITEMS[currentMode];
+  const checked = Array.from(document.querySelectorAll("#check-items input:checked")).length;
+  const total = items.length;
+  document.getElementById("progress-bar").style.width = (checked / total * 100) + "%";
+  document.getElementById("check-count").textContent = checked + "/" + total;
   
-  // ローカルrecordsにも追加（Notionロード前の表示用）
-  records.push({mode:currentMode,staff,cd,ct,time:today.time,checkedItems:items.filter(i=>checks[i.id]).map(i=>i.id),ok:notionOk});
-  
-  // 非同期でNotionから再取得
-  setTimeout(async ()=>{
-    await loadTodayRecords();
-  },1500);
-  
-  showScr("done-scr");
-}
-
-function filterRec(f){
-  ["rf-all","rf-op","rf-cl"].forEach(id=>{
-    const b=document.getElementById(id);b.classList.remove("on");
-    b.style.background="transparent";b.style.color="#666";b.style.borderColor="#e0e0e0";
-  });
-  const active=document.getElementById(f==="all"?"rf-all":f==="opening"?"rf-op":"rf-cl");
-  active.classList.add("on");active.style.background="#1a1a1a";active.style.color="#fff";active.style.borderColor="transparent";
-  
-  const body=document.getElementById("rec-body");
-  
-  // Notionレコードを優先
-  const sourceRecs=notionRecords.length>0?notionRecords:records;
-  const list=f==="all"?sourceRecs:sourceRecs.filter(r=>{
-    const mode=r.mode||"opening";
-    return mode===f;
-  });
-  
-  if(!list.length){body.innerHTML='<div style="text-align:center;padding:48px 0;color:#aaa;font-size:13px">記録がありません</div>';return;}
-  body.innerHTML="";
-  
-  list.forEach(r=>{
-    const mode=r.mode||"opening";
-    const ch=mode==="opening"?"#0F6E56":"#534AB7";
-    const cd=r.checks?.completed||0;
-    const ct=r.checks?.total||1;
-    const p=Math.round(cd/ct*100);
-    
-    // HACCP完了数を計算
-    const mi=ITEMS[mode]||[];
-    const checkItems=r.checks?.items||{};
-    const hd=mi.filter(i=>i.isHACCP&&checkItems[i.id]).length;
-    const ht=mi.filter(i=>i.isHACCP).length;
-    
-    const card=document.createElement("div");
-    card.className="rec-card";
-    card.style.cursor="pointer";
-    card.style.transition="background .15s";
-    
-    card.innerHTML=`<div style="padding:12px 14px;border-bottom:0.5px solid #f0f0f0;display:flex;justify-content:space-between">
-      <div><div style="font-size:11px;font-weight:500;color:${ch};letter-spacing:.08em">${mode==="opening"?"🌅 MORNING":"🌙 NIGHT"}</div><div style="font-size:15px;font-weight:500">${r.staff}</div></div>
-      <div style="text-align:right"><div style="font-size:11px;color:#aaa">${r.date||today.iso}</div><div style="font-size:13px;font-weight:500;color:${p===100?ch:"#A32D2D"}">${cd}/${ct}</div></div>
-    </div>
-    <div style="display:flex;gap:12px;padding:8px 14px">
-      <span style="font-size:12px;color:#666">完了率 <strong style="color:${p===100?ch:"#A32D2D"}">${p}%</strong></span>
-      <span style="font-size:12px;color:#666">HACCP <strong style="color:${hd===ht?ch:"#A32D2D"}">${hd}/${ht}</strong></span>
-      <span style="font-size:12px;color:#666">Status <strong style="color:${r.status&&r.status.includes("完了")?ch:"#A32D2D"}">${r.status||"記録済み"}</strong></span>
-    </div>`;
-    
-    // クリックして詳細表示
-    card.onclick=()=>showRecDetail(r,mode);
-    card.onmouseover=()=>card.style.background="#f9f9f9";
-    card.onmouseout=()=>card.style.background="";
-    
-    body.appendChild(card);
+  checks = {};
+  document.querySelectorAll("#check-items input").forEach(el => {
+    if (el.checked) checks[el.id] = true;
   });
 }
 
-/**
- * 記録の詳細モーダルを表示
- */
-function showRecDetail(rec,mode){
-  const modal=document.createElement("div");
-  modal.style.cssText=`position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,0.5);z-index:1000;display:flex;align-items:flex-end;animation:slideUp .3s ease`;
+function toConfirm() {
+  const items = ITEMS[currentMode];
+  const checked = Object.keys(checks).length;
+  const total = items.length;
+  const rate = Math.round(checked / total * 100);
   
-  const sheet=document.createElement("div");
-  sheet.style.cssText=`background:#fff;border-radius:16px 16px 0 0;width:100%;max-height:80vh;overflow-y:auto;padding:20px 16px 40px;box-shadow:0 -4px 20px rgba(0,0,0,0.1)`;
+  document.getElementById("confirm-staff").textContent = staff;
+  document.getElementById("confirm-mode").textContent = (currentMode === "opening" ? "🌅 開店前" : "🌙 締め作業");
+  document.getElementById("confirm-rate").textContent = checked + "/" + total + " (" + rate + "%)";
   
-  const mi=ITEMS[mode]||[];
-  const checkItems=rec.checks?.items||{};
+  showScr("confirm");
+}
+
+async function send() {
+  document.getElementById("send-btn").disabled = true;
+  document.getElementById("send-btn").textContent = "送信中...";
   
-  // ヘッダ
-  const hdr=document.createElement("div");
-  hdr.style.cssText=`display:flex;justify-content:space-between;align-items:center;margin-bottom:20px`;
-  const ch=mode==="opening"?"#0F6E56":"#534AB7";
-  hdr.innerHTML=`
-    <div>
-      <div style="font-size:11px;font-weight:500;color:${ch};letter-spacing:.1em">${mode==="opening"?"MORNING":"NIGHT"}</div>
-      <div style="font-size:18px;font-weight:500">${rec.staff}</div>
-      <div style="font-size:12px;color:#666;margin-top:4px">${rec.date||today.iso}</div>
-    </div>
-    <button onclick="this.closest('[data-modal]').remove()" style="width:32px;height:32px;border-radius:8px;border:0.5px solid #e0e0e0;background:#f5f5f5;cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:18px;color:#666;flex-shrink:0">✕</button>
-  `;
-  sheet.appendChild(hdr);
+  const today = new Date().toISOString().split("T")[0];
+  const payload = {
+    mode: currentMode,
+    date: today,
+    staff: staff,
+    status: "✅ 完了",
+    checks: checks
+  };
   
-  // ステータスバー
-  const cd=rec.checks?.completed||0;
-  const ct=rec.checks?.total||1;
-  const p=Math.round(cd/ct*100);
-  const stat=document.createElement("div");
-  stat.style.cssText=`background:#f5f5f5;border-radius:12px;padding:12px 14px;margin-bottom:16px`;
-  const haccpItems=mi.filter(i=>i.isHACCP);
-  const haccpDone=haccpItems.filter(i=>checkItems[i.id]).length;
-  stat.innerHTML=`
-    <div style="display:flex;justify-content:space-between;margin-bottom:8px;font-size:13px;font-weight:500">
-      <span>完了率</span>
-      <span style="color:${ch}">${p}%（${cd}/${ct}件）</span>
-    </div>
-    <div style="background:#fff;height:6px;border-radius:4px;overflow:hidden">
-      <div style="background:${ch};height:100%;width:${p}%"></div>
-    </div>
-    <div style="display:flex;justify-content:space-between;margin-top:8px;font-size:12px;color:#666">
-      <span>HACCP: ${haccpDone}/${haccpItems.length}</span>
-      <span style="color:${haccpDone===haccpItems.length?ch:"#A32D2D"}">${haccpDone===haccpItems.length?"✅ OK":"⚠️ 未完了"}</span>
-    </div>
-  `;
-  sheet.appendChild(stat);
-  
-  // チェック項目リスト（エリア別）
-  const areas=[...new Set(mi.map(i=>i.area))];
-  areas.forEach(area=>{
-    const areaItems=mi.filter(i=>i.area===area);
-    const areaTitle=document.createElement("div");
-    areaTitle.style.cssText=`font-size:11px;font-weight:500;color:#666;letter-spacing:.1em;margin-bottom:8px;margin-top:12px`;
-    areaTitle.textContent=area;
-    sheet.appendChild(areaTitle);
-    
-    const areaList=document.createElement("div");
-    areaList.style.cssText=`display:flex;flex-direction:column;gap:6px`;
-    
-    areaItems.forEach(item=>{
-      const ckd=!!checkItems[item.id];
-      const itemEl=document.createElement("div");
-      itemEl.style.cssText=`display:flex;align-items:center;gap:8px;padding:8px 10px;background:${ckd?"#f0f0f0":"#fff"};border:0.5px solid ${ckd?"#e5e5e5":"#f0f0f0"};border-radius:6px`;
-      
-      const as=AS[item.area]||AS["ゴミ"];
-      itemEl.innerHTML=`
-        <div style="width:18px;height:18px;border-radius:4px;background:${ckd?as.c:"transparent"};border:1.5px solid ${ckd?as.c:"#ccc"};display:flex;align-items:center;justify-content:center;flex-shrink:0">
-          ${ckd?'<i class="ti ti-check" aria-hidden="true" style="font-size:11px;color:#fff"></i>':""}
-        </div>
-        <div style="flex:1">
-          <div style="font-size:13px;font-weight:500;${ckd?"color:#999;text-decoration:line-through":""}">${item.label}</div>
-          <div style="font-size:11px;color:#999;margin-top:2px">${item.detail}</div>
-        </div>
-      `;
-      areaList.appendChild(itemEl);
+  try {
+    const res = await fetch(GAS_URL, {
+      method: "POST",
+      headers: {"Content-Type": "text/plain"},
+      body: JSON.stringify(payload)
     });
-    sheet.appendChild(areaList);
-  });
+    const data = await res.json();
+    
+    if (data.ok) {
+      showScr("done");
+      await loadTodayRecords();
+    } else {
+      alert("エラー: " + data.error);
+    }
+  } catch (err) {
+    alert("送信失敗: " + err.message);
+  }
   
-  modal.appendChild(sheet);
-  modal.setAttribute("data-modal","1");
-  document.body.appendChild(modal);
-  modal.onclick=(e)=>{if(e.target===modal) modal.remove();};
+  document.getElementById("send-btn").disabled = false;
+  document.getElementById("send-btn").textContent = "Notionに記録";
 }
 
-// CSSアニメーション追加（<style>内に追加）
-const style=document.createElement("style");
-style.textContent=`@keyframes slideUp{from{transform:translateY(100%)}to{transform:translateY(0)}}`;
-document.head.appendChild(style);
+function goHome() {
+  showScr("home");
+  loadTodayRecords();
+}
 
-(async function init(){
-  today=getToday();
-  loadNames();
-  document.getElementById("home-dt").textContent=today.jp;
-  document.getElementById("rec-dt") && (document.getElementById("rec-dt").textContent=today.jp);
-  await loadTodayRecords();
-})();
+// 初期化
+document.addEventListener("DOMContentLoaded", () => {
+  loadStaffs();
+  loadTodayRecords();
+  setInterval(loadTodayRecords, 5000);
+});
 </script>
 </body>
 </html>
