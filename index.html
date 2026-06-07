@@ -180,6 +180,11 @@ button,input{font-family:inherit}
     </button>
   </div>
   <div class="h-bottom">
+    <!-- DEBUG BUTTON -->
+    <button onclick="toggleDebug()" style="padding:8px 12px;border-radius:8px;background:#f5f5f5;border:0.5px solid #e5e5e5;color:#999;font-size:11px;cursor:pointer;text-align:center">
+      🔧 デバッグ情報
+    </button>
+    
     <!-- STATS WIDGET -->
     <div class="stat-widget" id="stat-widget" style="display:none">
       <div style="font-size:11px;font-weight:500;color:#666;letter-spacing:.1em;margin-bottom:10px">TODAY'S SUMMARY</div>
@@ -404,10 +409,33 @@ function showScr(id){
   t.scrollTop=0;
 }
 
-function showToast(msg){
-  const t=document.getElementById("toast");
-  t.textContent=msg;t.classList.add("show");
-  setTimeout(()=>t.classList.remove("show"),2000);
+/**
+ * デバッグ情報を表示
+ */
+function toggleDebug(){
+  const msg=`
+📊 デバッグ情報
+━━━━━━━━━━━━━━━━━━
+GAS URL: ${GAS_URL}
+本日: ${today.iso}
+Notionレコード: ${notionRecords.length}件
+ローカルrecords: ${records.length}件
+登録スタッフ: ${staffNames.length}人
+
+【本日のNotionデータ】
+${notionRecords.length>0?notionRecords.map(r=>`
+✓ ${r.staff} - ${r.mode==="opening"?"開店前":"締め作業"}
+  完了: ${r.checks?.completed}/${r.checks?.total}
+  Status: ${r.status}`).join("\n"):"(記録なし)"}
+
+【コンソールを確認してください】
+ブラウザのF12 → Console タブ`;
+
+  alert(msg);
+  console.log("=== DEBUG INFO ===");
+  console.log("notionRecords:", notionRecords);
+  console.log("records:", records);
+  console.log("staffNames:", staffNames);
 }
 
 function loadNames(){
@@ -422,14 +450,24 @@ function saveNames(){
  */
 async function loadTodayRecords(){
   try{
-    const res=await fetch(GAS_URL+"?action=fetchTodayRecords",{method:"GET"});
+    // POSTリクエストで action を送信
+    const res=await fetch(GAS_URL,{
+      method:"POST",
+      headers:{"Content-Type":"text/plain"},
+      body:JSON.stringify({action:"fetchTodayRecords"})
+    });
     const data=await res.json();
+    console.log("Notion Records:", data);
+    
     if(data.ok && data.data){
       notionRecords=data.data.opening.concat(data.data.closing);
+      console.log("Loaded " + notionRecords.length + " records from Notion");
       renderGaps();
       renderStats();
       renderHomeRec();
       return true;
+    } else {
+      console.warn("API returned error:", data.error);
     }
   }catch(err){
     console.error("Notion記録取得エラー:",err);
