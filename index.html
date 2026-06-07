@@ -1,88 +1,3 @@
-
-
-<!DOCTYPE html> <html lang="ja"> <head> <meta charset="UTF-8"> <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1"> <meta name="theme-color" content="#ffffff"> <meta name="apple-mobile-web-app-capable" content="yes"> <meta name="apple-mobile-web-app-status-bar-style"
-
-pasted
-
-
-// ============================================================ // チェックリスト記録 — Google Apps Script // 開店前チェック記録 DB: 21925470-bea4-4639-a12e-ba9e6912d5ff // 締め作業チェック記録 DB: f749157c-1ffb-41dc-a37f-f357f3bceb65 // ============================================================ const NOTION_TOKEN
-
-pasted
-
-チェックリストアプリの作成とハブ。アプリをチェックリスト可変式にしたい、またNotion上のデータを抽出し、その日の記録をアプリ上で参照できるようにしたい。またその日のトータルチェックに漏れがないか一覧できるようにして
-
-12:35
-
-動的チェックリスト、Notion連携、日別サマリー機能を構想した。
-動的チェックリスト、Notion連携、日別サマリー機能を構想した。
-Kent、チェックリストアプリの可変式化とダッシュボード機能の追加ですね。規模が大きい変更なので、要件を確認した上で実装を提案したいです。
-
-Q: チェック項目マスターをNotionで管理したいですか？（現在はアプリにハードコード）
-A: 今はハードコードのまま（後で対応）
-
-Q: その日の記録参照で見たいデータは？
-A: 両方見たい
-
-Q: 未チェック漏れの一覧表示は、どこに置きたい？
-A: ホーム画面にウィジェット追加
-
-12:36
-
-ホーム画面ウィジェット追加と記録取得機能を設計した。
-ホーム画面ウィジェット追加と記録取得機能を設計した。
-実装します。GAS側で本日の記録を全件取得し、HTML側でホーム画面に「未チェック漏れ」ウィジェットとスタッフ別・モード別の詳細サマリーを追加します。
-
-
-ホーム画面ウィジェットとGAS連携を設計した。
-ホーム画面ウィジェットとGAS連携を設計した。
-次に、HTML側の更新版を作成します。ホーム画面に「Today's Gaps」ウィジェットと詳細サマリーを追加します。
-
-
-ユーザーの要件を整理し実装概要を準備した。
-ユーザーの要件を整理し実装概要を準備した。
-実装完了。3つのファイルを提供しました：
-
-📦 追加機能の概要
-1. PENDING CHECKS ウィジェット（ホーム画面）
-登録済みスタッフの中から「未完了 = まだチェック記録がない」スタッフ＋モード組み合わせを表示
-例: 「田中さん — 🌙 締め作業」「佐藤さん — 🌅 開店前」
-全完了時は「✅ 本日のチェック完了」メッセージ表示
-2. TODAY'S SUMMARY ウィジェット（ホーム画面）
-本日チェック数（延べ）
-開店前/締め作業 完了数
-100%完了件数（赤/緑で色分け）
-3. Notion リアルタイム連携
-アプリ初期化時にgetTodayRecords()でNotionから本日の記録を全件取得
-チェック完了送信後、ウィジェットが自動更新
-🔧 実装ステップ
-GAS側：gas_additions.gs の関数を既存スクリプトに追加（doPost関数を修正）
-HTML側：daily-check-updated.html で既存ファイルを上書き
-テスト：GASコンソールで getTodayRecords() テスト実行
-📝 注意点
-チェック項目はまだハードコードのまま（後で可変式対応可）
-ウィジェットはスタッフ登録がある場合のみ機能
-古い記録参照も同じ仕組みで集計可
-ガイドファイルに詳細な実装手順・テストチェックリスト・今後の拡張案も記載しました。
-
-
-Daily check updated
-コード · HTML 
-
-Gas additions
-GS 
-
-Implementation guide
-ドキュメント · MD 
-
-
-
-
-
-Claude は AI のため、誤りを含む可能性があります。回答内容は必ずご確認ください。
-
-
-raw
-Daily check updated · HTML
 <!DOCTYPE html>
 <html lang="ja">
 <head>
@@ -234,7 +149,7 @@ button,input{font-family:inherit}
 </head>
 <body>
 <div class="toast" id="toast"></div>
- 
+
 <!-- HOME -->
 <div id="home-scr" class="scr on">
   <div class="h-hero">
@@ -270,13 +185,13 @@ button,input{font-family:inherit}
       <div style="font-size:11px;font-weight:500;color:#666;letter-spacing:.1em;margin-bottom:10px">TODAY'S SUMMARY</div>
       <div class="stat-grid" id="stat-grid"></div>
     </div>
- 
+
     <!-- GAPS WIDGET -->
     <div class="gap-widget" id="gap-widget" style="display:none">
       <div class="gap-title">PENDING CHECKS</div>
       <div class="gap-list" id="gap-list"></div>
     </div>
- 
+
     <!-- RECORDS WIDGET -->
     <div class="rp">
       <div class="rp-head">
@@ -290,7 +205,7 @@ button,input{font-family:inherit}
     </button>
   </div>
 </div>
- 
+
 <!-- MANAGER -->
 <div id="mgr-scr" class="scr">
   <div class="ph">
@@ -310,7 +225,7 @@ button,input{font-family:inherit}
     <div class="hint-box">右のゴミ箱ボタンで削除できます。</div>
   </div>
 </div>
- 
+
 <!-- STAFF SELECT -->
 <div id="staff-scr" class="scr">
   <div class="ph">
@@ -339,7 +254,7 @@ button,input{font-family:inherit}
     <button class="mb" id="st-btn" onclick="toCheck()" disabled>記入者を選択してください</button>
   </div>
 </div>
- 
+
 <!-- CHECK -->
 <div id="ck-scr" class="scr">
   <div class="ck-sticky">
@@ -365,7 +280,7 @@ button,input{font-family:inherit}
     <button class="mb" id="ck-btn" onclick="showScr('cf-scr');buildConfirm()"></button>
   </div>
 </div>
- 
+
 <!-- CONFIRM -->
 <div id="cf-scr" class="scr">
   <div class="ph">
@@ -375,7 +290,7 @@ button,input{font-family:inherit}
   <div class="cf-body" id="cf-body"></div>
   <div class="bot"><button class="mb" id="send-btn" onclick="handleSend()"></button></div>
 </div>
- 
+
 <!-- RECORDS -->
 <div id="rec-scr" class="scr">
   <div class="ph">
@@ -389,7 +304,7 @@ button,input{font-family:inherit}
   </div>
   <div style="flex:1;overflow-y:auto;padding:10px 16px 40px" id="rec-body"></div>
 </div>
- 
+
 <!-- DONE -->
 <div id="done-scr" class="scr">
   <div class="done-in">
@@ -404,14 +319,14 @@ button,input{font-family:inherit}
     </div>
   </div>
 </div>
- 
+
 <script>
 const GAS_URL="https://script.google.com/macros/s/AKfycbzlIk8sdubn9tuBVlsMO7mE1l9cwvQCF-4Voo4OdI0zsPWpvzqJTl1tJiNH2z3bAhYd/exec";
 const STORAGE_KEY="daily-check-staff-v1";
- 
+
 const OPENING_PROPS=["健康確認","手洗い実施","身だしなみ","冷蔵庫温度確認","原材料受入確認","交差汚染防止確認","調理器具殺菌確認","ガス電気点検","湯沸かし","作業場清掃消毒","ハイター済タオル干し","仕込み在庫補充","食洗機作動確認","ビールサーバー確認","ドリンク在庫補充","客席清掃消毒","カトラリー補充","消耗品補充","メニューブック消毒","ソフトクリームサーバー確認","トイレ洗浄消毒","床清掃","風除室清掃"];
 const CLOSING_PROPS=["フライヤー締め","ガスコンロ洗浄","食洗機洗浄締め","ガス栓電源換気扇確認","冷蔵冷凍庫確認","調理器具食器洗浄","調理器具サプライ","作業台清掃","シンク清掃","タオル類回収","タオルスポンジハイター殺菌","翌日タオル準備","コバエ駆除剤セット","ゴミ箱チェック"];
- 
+
 const ITEMS={
   opening:[
     {id:"健康確認",label:"健康確認",detail:"体調・検温・傷の有無。発熱・消化器症状は出勤不可",area:"HACCP",isHACCP:true},
@@ -455,7 +370,7 @@ const ITEMS={
     {id:"ゴミ箱チェック",label:"ゴミ箱チェック",detail:"ゴミをまとめて厨房裏通路へ。ゴミ箱汚れは清掃",area:"ゴミ",isHACCP:false},
   ]
 };
- 
+
 const AS={
   HACCP:{c:"#A32D2D",bg:"#FCEBEB",bd:"#E24B4A"},
   キッチン:{c:"#633806",bg:"#FAEEDA",bd:"#EF9F27"},
@@ -466,10 +381,10 @@ const AS={
   衛生:{c:"#3C3489",bg:"#EEEDFE",bd:"#7F77DD"},
   ゴミ:{c:"#444441",bg:"#F1EFE8",bd:"#B4B2A9"},
 };
- 
+
 let currentMode=null,today={},items=[],checks={},staff="",filter="all",sending=false,records=[],notionRecords={};
 let staffNames=[];
- 
+
 function getToday(){
   const d=new Date();
   return{
@@ -481,27 +396,27 @@ function getToday(){
 const aHex=()=>currentMode==="opening"?"#0F6E56":"#534AB7";
 const mLabel=()=>currentMode==="opening"?"開店前チェック":"締め作業チェック";
 const tLabel=()=>currentMode==="opening"?"MORNING":"NIGHT";
- 
+
 function showScr(id){
   document.querySelectorAll(".scr").forEach(s=>{s.classList.remove("on");s.style.display="";});
   const t=document.getElementById(id);
   t.classList.add("on");t.style.display="flex";
   t.scrollTop=0;
 }
- 
+
 function showToast(msg){
   const t=document.getElementById("toast");
   t.textContent=msg;t.classList.add("show");
   setTimeout(()=>t.classList.remove("show"),2000);
 }
- 
+
 function loadNames(){
   try{const s=localStorage.getItem(STORAGE_KEY);if(s)staffNames=JSON.parse(s)||[];}catch(_){}
 }
 function saveNames(){
   try{localStorage.setItem(STORAGE_KEY,JSON.stringify(staffNames));}catch(_){}
 }
- 
+
 /**
  * GASからNotionの本日記録を取得
  */
@@ -513,12 +428,15 @@ async function loadTodayRecords(){
       notionRecords=data.data.opening.concat(data.data.closing);
       renderGaps();
       renderStats();
+      renderHomeRec();
+      return true;
     }
   }catch(err){
     console.error("Notion記録取得エラー:",err);
   }
+  return false;
 }
- 
+
 /**
  * 未完了チェック（ギャップ）を表示
  */
@@ -528,10 +446,10 @@ function renderGaps(){
     document.getElementById("gap-widget").style.display="none";
     return;
   }
- 
+
   // 本日チェック済み：(スタッフ, モード) の組み合わせ
   const completed=new Set(notionRecords.map(r=>r.staff+"__"+r.mode));
- 
+
   // 未完了：登録済みスタッフ × 2モード
   const gaps=[];
   staffNames.forEach(s=>{
@@ -540,7 +458,7 @@ function renderGaps(){
     if(!completed.has(oKey)) gaps.push({staff:s,mode:"opening",label:"🌅 開店前"});
     if(!completed.has(cKey)) gaps.push({staff:s,mode:"closing",label:"🌙 締め作業"});
   });
- 
+
   document.getElementById("gap-widget").style.display=gaps.length?"block":"none";
   if(gaps.length){
     gapEl.innerHTML=gaps.slice(0,5).map(g=>`
@@ -553,7 +471,7 @@ function renderGaps(){
     gapEl.innerHTML=`<div class="gap-empty">✅ 本日のチェック完了</div>`;
   }
 }
- 
+
 /**
  * 本日の統計を表示
  */
@@ -562,12 +480,12 @@ function renderStats(){
     document.getElementById("stat-widget").style.display="none";
     return;
   }
- 
+
   const total=notionRecords.length;
   const opening=notionRecords.filter(r=>r.mode==="opening").length;
   const closing=notionRecords.filter(r=>r.mode==="closing").length;
   const fullComplete=notionRecords.filter(r=>r.checks.completed===r.checks.total).length;
- 
+
   document.getElementById("stat-widget").style.display="block";
   document.getElementById("stat-grid").innerHTML=`
     <div class="stat-box">
@@ -591,23 +509,29 @@ function renderStats(){
       <div class="stat-sub">件</div>
     </div>`;
 }
- 
+
 function renderHomeRec(){
   const el=document.getElementById("home-rec");
-  if(!records.length){el.innerHTML='<div class="rp-empty">記録はまだありません</div>';return;}
-  el.innerHTML=records.slice(0,4).map(r=>{
-    const col=r.mode==="opening"?"var(--op)":"var(--cl)";
-    const pct=Math.round(r.cd/r.ct*100);
+  // Notionレコードを優先、なければローカルrecords
+  const sourceRecs=notionRecords.length>0?notionRecords:records;
+  if(!sourceRecs.length){el.innerHTML='<div class="rp-empty">記録はまだありません</div>';return;}
+  
+  el.innerHTML=sourceRecs.slice(0,4).map(r=>{
+    const mode=r.mode||"opening";
+    const col=mode==="opening"?"var(--op)":"var(--cl)";
+    const cd=r.checks?.completed||0;
+    const ct=r.checks?.total||1;
+    const pct=Math.round(cd/ct*100);
     return`<div class="rp-row">
       <div style="display:flex;align-items:center;gap:6px">
-        <span style="font-size:11px;color:${col};font-weight:500">${r.mode==="opening"?"MORNING":"NIGHT"}</span>
+        <span style="font-size:11px;color:${col};font-weight:500">${mode==="opening"?"MORNING":"NIGHT"}</span>
         <span style="font-size:13px;font-weight:500">${r.staff}</span>
       </div>
-      <span style="font-size:12px;font-weight:500;color:${pct===100?col:"#666"}">${r.cd}/${r.ct}</span>
+      <span style="font-size:12px;font-weight:500;color:${pct===100?col:"#666"}">${cd}/${ct}</span>
     </div>`;
   }).join("");
 }
- 
+
 function renderMgrList(){
   const el=document.getElementById("mgr-list");
   if(!staffNames.length){el.innerHTML='<p style="font-size:13px;color:#aaa;padding:8px 0">登録済みのスタッフはいません</p>';return;}
@@ -620,7 +544,7 @@ function renderMgrList(){
       </button>
     </div>`).join("");
 }
- 
+
 function addStaff(){
   const inp=document.getElementById("mgr-inp");
   const name=inp.value.trim();
@@ -629,17 +553,19 @@ function addStaff(){
   if(staffNames.includes(name)){err.textContent=`「${name}」はすでに登録されています`;err.classList.add("on");return;}
   err.classList.remove("on");
   staffNames.push(name);saveNames();
-  inp.value="";renderMgrList();renderGaps();
+  inp.value="";renderMgrList();
+  loadTodayRecords().then(()=>renderGaps());
   showToast(`「${name}」を登録しました`);
 }
- 
+
 function removeStaff(i){
   const name=staffNames[i];
   staffNames.splice(i,1);saveNames();
-  renderMgrList();renderGaps();
+  renderMgrList();
+  loadTodayRecords().then(()=>renderGaps());
   showToast(`「${name}」を削除しました`);
 }
- 
+
 function startMode(m){
   currentMode=m;items=ITEMS[m];checks={};staff="";filter="all";sending=false;
   today=getToday();
@@ -654,7 +580,7 @@ function startMode(m){
   renderStGrid();updateStBtn();
   showScr("staff-scr");
 }
- 
+
 function renderStGrid(){
   const grid=document.getElementById("st-grid");
   const ac=aHex();
@@ -669,20 +595,20 @@ function renderStGrid(){
       ${staff===n?`<i class="ti ti-check" aria-hidden="true" style="font-size:14px;flex-shrink:0"></i>`:""}
     </button>`).join("");
 }
- 
+
 function selectStaff(n){
   staff=n;
   document.getElementById("st-inp").value="";
   document.getElementById("st-err").classList.remove("on");
   renderStGrid();updateStBtn();
 }
- 
+
 function onDirect(v){
   staff=v.trim();
   document.getElementById("st-err").classList.remove("on");
   renderStGrid();updateStBtn();
 }
- 
+
 function updateStBtn(){
   const btn=document.getElementById("st-btn");
   if(staff){
@@ -693,7 +619,7 @@ function updateStBtn(){
     btn.textContent="記入者を選択してください";
   }
 }
- 
+
 function toCheck(){
   if(!staff){document.getElementById("st-err").classList.add("on");return;}
   document.getElementById("ck-mode").textContent=tLabel();
@@ -703,7 +629,7 @@ function toCheck(){
   buildFtabs();renderCkBody();
   showScr("ck-scr");
 }
- 
+
 function buildFtabs(){
   const areas=[...new Set(items.map(i=>i.area))];
   const ac=aHex();
@@ -715,9 +641,9 @@ function buildFtabs(){
   document.getElementById("ftabs").innerHTML=fl.map(f=>`
     <button class="ft${filter===f.k?" on":""}" style="${filter===f.k?`background:${ac};color:#fff;border-color:${ac}`:""}" onclick="setF('${f.k}')">${f.l}(${f.n})</button>`).join("");
 }
- 
+
 function setF(f){filter=f;buildFtabs();renderCkBody();}
- 
+
 function renderCkBody(){
   updBars();buildFtabs();
   const body=document.getElementById("ck-body");body.innerHTML="";
@@ -751,7 +677,7 @@ function renderCkBody(){
   });
   updCkBtn();
 }
- 
+
 function updBars(){
   const hi=items.filter(i=>i.isHACCP),hd=hi.filter(i=>checks[i.id]).length;
   const cd=items.filter(i=>checks[i.id]).length,ct=items.length;
@@ -764,7 +690,7 @@ function updBars(){
   document.getElementById("tf").style.width=`${ct?Math.round(cd/ct*100):0}%`;
   document.getElementById("tf").style.background=ac;
 }
- 
+
 function updCkBtn(){
   const btn=document.getElementById("ck-btn");
   const cd=items.filter(i=>checks[i.id]).length,ct=items.length,pct=Math.round(cd/ct*100);
@@ -772,7 +698,7 @@ function updCkBtn(){
   btn.style.background=pct===100?aHex():"#BA7517";
   btn.textContent=`確認へ（${cd}/${ct}件） →`;
 }
- 
+
 function buildConfirm(){
   const ac=aHex();
   document.getElementById("cf-eye").textContent=tLabel();
@@ -818,7 +744,7 @@ function buildConfirm(){
   ft.textContent="確認者（小沢健人）はNotionの承認ビューで対応します";body.appendChild(ft);
   updSendBtn();
 }
- 
+
 function updSendBtn(){
   const btn=document.getElementById("send-btn");
   const cd=items.filter(i=>checks[i.id]).length,ct=items.length,pct=Math.round(cd/ct*100);
@@ -826,7 +752,7 @@ function updSendBtn(){
   btn.style.background=sending?"#e0e0e0":pct===100?aHex():"#BA7517";
   btn.textContent=sending?"Notionに送信中...":pct===100?"✓ 全完了 — Notionに記録する":`${cd}/${ct}件完了 — 記録する`;
 }
- 
+
 async function handleSend(){
   if(sending)return;
   sending=true;updSendBtn();
@@ -844,7 +770,7 @@ async function handleSend(){
   sending=false;
   showDone(cd,ct,haccpOk,ok);
 }
- 
+
 function showDone(cd,ct,haccpOk,notionOk){
   const ac=aHex(),pct=Math.round(cd/ct*100);
   document.getElementById("d-ic").textContent=pct===100?"✅":"⚠️";
@@ -857,11 +783,18 @@ function showDone(cd,ct,haccpOk,notionOk){
     {l:"完了項目",v:`${cd}件`,danger:false},
     {l:"Notion",v:notionOk?"✓ 記録済み":"要確認",danger:!notionOk},
   ].map(s=>`<div class="done-st"><div class="done-sl">${s.l}</div><div class="done-sv" style="color:${s.danger?"#A32D2D":ac}">${s.v}</div></div>`).join("");
-  renderHomeRec();
-  loadTodayRecords();
+  
+  // ローカルrecordsにも追加（Notionロード前の表示用）
+  records.push({mode:currentMode,staff,cd,ct,time:today.time,checkedItems:items.filter(i=>checks[i.id]).map(i=>i.id),ok:notionOk});
+  
+  // 非同期でNotionから再取得
+  setTimeout(async ()=>{
+    await loadTodayRecords();
+  },1500);
+  
   showScr("done-scr");
 }
- 
+
 function filterRec(f){
   ["rf-all","rf-op","rf-cl"].forEach(id=>{
     const b=document.getElementById(id);b.classList.remove("on");
@@ -869,38 +802,156 @@ function filterRec(f){
   });
   const active=document.getElementById(f==="all"?"rf-all":f==="opening"?"rf-op":"rf-cl");
   active.classList.add("on");active.style.background="#1a1a1a";active.style.color="#fff";active.style.borderColor="transparent";
+  
   const body=document.getElementById("rec-body");
-  const list=f==="all"?records:records.filter(r=>r.mode===f);
+  
+  // Notionレコードを優先
+  const sourceRecs=notionRecords.length>0?notionRecords:records;
+  const list=f==="all"?sourceRecs:sourceRecs.filter(r=>{
+    const mode=r.mode||"opening";
+    return mode===f;
+  });
+  
   if(!list.length){body.innerHTML='<div style="text-align:center;padding:48px 0;color:#aaa;font-size:13px">記録がありません</div>';return;}
   body.innerHTML="";
+  
   list.forEach(r=>{
-    const ch=r.mode==="opening"?"#0F6E56":"#534AB7";
-    const p=Math.round(r.cd/r.ct*100);
-    const mi=ITEMS[r.mode]||[];
-    const hd=(r.checkedItems||[]).filter(id=>{const it=mi.find(i=>i.id===id);return it&&it.isHACCP;}).length;
+    const mode=r.mode||"opening";
+    const ch=mode==="opening"?"#0F6E56":"#534AB7";
+    const cd=r.checks?.completed||0;
+    const ct=r.checks?.total||1;
+    const p=Math.round(cd/ct*100);
+    
+    // HACCP完了数を計算
+    const mi=ITEMS[mode]||[];
+    const checkItems=r.checks?.items||{};
+    const hd=mi.filter(i=>i.isHACCP&&checkItems[i.id]).length;
     const ht=mi.filter(i=>i.isHACCP).length;
-    const card=document.createElement("div");card.className="rec-card";
+    
+    const card=document.createElement("div");
+    card.className="rec-card";
+    card.style.cursor="pointer";
+    card.style.transition="background .15s";
+    
     card.innerHTML=`<div style="padding:12px 14px;border-bottom:0.5px solid #f0f0f0;display:flex;justify-content:space-between">
-      <div><div style="font-size:11px;font-weight:500;color:${ch};letter-spacing:.08em">${r.mode==="opening"?"MORNING":"NIGHT"}</div><div style="font-size:15px;font-weight:500">${r.staff}</div></div>
-      <div style="text-align:right"><div style="font-size:11px;color:#aaa">${r.time}</div><div style="font-size:13px;font-weight:500;color:${p===100?ch:"#A32D2D"}">${r.cd}/${r.ct}</div></div>
+      <div><div style="font-size:11px;font-weight:500;color:${ch};letter-spacing:.08em">${mode==="opening"?"🌅 MORNING":"🌙 NIGHT"}</div><div style="font-size:15px;font-weight:500">${r.staff}</div></div>
+      <div style="text-align:right"><div style="font-size:11px;color:#aaa">${r.date||today.iso}</div><div style="font-size:13px;font-weight:500;color:${p===100?ch:"#A32D2D"}">${cd}/${ct}</div></div>
     </div>
     <div style="display:flex;gap:12px;padding:8px 14px">
       <span style="font-size:12px;color:#666">完了率 <strong style="color:${p===100?ch:"#A32D2D"}">${p}%</strong></span>
       <span style="font-size:12px;color:#666">HACCP <strong style="color:${hd===ht?ch:"#A32D2D"}">${hd}/${ht}</strong></span>
-      <span style="font-size:12px;color:#666">Notion <strong style="color:${r.ok?ch:"#A32D2D"}">${r.ok?"✓":"要確認"}</strong></span>
+      <span style="font-size:12px;color:#666">Status <strong style="color:${r.status&&r.status.includes("完了")?ch:"#A32D2D"}">${r.status||"記録済み"}</strong></span>
     </div>`;
+    
+    // クリックして詳細表示
+    card.onclick=()=>showRecDetail(r,mode);
+    card.onmouseover=()=>card.style.background="#f9f9f9";
+    card.onmouseout=()=>card.style.background="";
+    
     body.appendChild(card);
   });
 }
- 
-(function init(){
+
+/**
+ * 記録の詳細モーダルを表示
+ */
+function showRecDetail(rec,mode){
+  const modal=document.createElement("div");
+  modal.style.cssText=`position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,0.5);z-index:1000;display:flex;align-items:flex-end;animation:slideUp .3s ease`;
+  
+  const sheet=document.createElement("div");
+  sheet.style.cssText=`background:#fff;border-radius:16px 16px 0 0;width:100%;max-height:80vh;overflow-y:auto;padding:20px 16px 40px;box-shadow:0 -4px 20px rgba(0,0,0,0.1)`;
+  
+  const mi=ITEMS[mode]||[];
+  const checkItems=rec.checks?.items||{};
+  
+  // ヘッダ
+  const hdr=document.createElement("div");
+  hdr.style.cssText=`display:flex;justify-content:space-between;align-items:center;margin-bottom:20px`;
+  const ch=mode==="opening"?"#0F6E56":"#534AB7";
+  hdr.innerHTML=`
+    <div>
+      <div style="font-size:11px;font-weight:500;color:${ch};letter-spacing:.1em">${mode==="opening"?"MORNING":"NIGHT"}</div>
+      <div style="font-size:18px;font-weight:500">${rec.staff}</div>
+      <div style="font-size:12px;color:#666;margin-top:4px">${rec.date||today.iso}</div>
+    </div>
+    <button onclick="this.closest('[data-modal]').remove()" style="width:32px;height:32px;border-radius:8px;border:0.5px solid #e0e0e0;background:#f5f5f5;cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:18px;color:#666;flex-shrink:0">✕</button>
+  `;
+  sheet.appendChild(hdr);
+  
+  // ステータスバー
+  const cd=rec.checks?.completed||0;
+  const ct=rec.checks?.total||1;
+  const p=Math.round(cd/ct*100);
+  const stat=document.createElement("div");
+  stat.style.cssText=`background:#f5f5f5;border-radius:12px;padding:12px 14px;margin-bottom:16px`;
+  const haccpItems=mi.filter(i=>i.isHACCP);
+  const haccpDone=haccpItems.filter(i=>checkItems[i.id]).length;
+  stat.innerHTML=`
+    <div style="display:flex;justify-content:space-between;margin-bottom:8px;font-size:13px;font-weight:500">
+      <span>完了率</span>
+      <span style="color:${ch}">${p}%（${cd}/${ct}件）</span>
+    </div>
+    <div style="background:#fff;height:6px;border-radius:4px;overflow:hidden">
+      <div style="background:${ch};height:100%;width:${p}%"></div>
+    </div>
+    <div style="display:flex;justify-content:space-between;margin-top:8px;font-size:12px;color:#666">
+      <span>HACCP: ${haccpDone}/${haccpItems.length}</span>
+      <span style="color:${haccpDone===haccpItems.length?ch:"#A32D2D"}">${haccpDone===haccpItems.length?"✅ OK":"⚠️ 未完了"}</span>
+    </div>
+  `;
+  sheet.appendChild(stat);
+  
+  // チェック項目リスト（エリア別）
+  const areas=[...new Set(mi.map(i=>i.area))];
+  areas.forEach(area=>{
+    const areaItems=mi.filter(i=>i.area===area);
+    const areaTitle=document.createElement("div");
+    areaTitle.style.cssText=`font-size:11px;font-weight:500;color:#666;letter-spacing:.1em;margin-bottom:8px;margin-top:12px`;
+    areaTitle.textContent=area;
+    sheet.appendChild(areaTitle);
+    
+    const areaList=document.createElement("div");
+    areaList.style.cssText=`display:flex;flex-direction:column;gap:6px`;
+    
+    areaItems.forEach(item=>{
+      const ckd=!!checkItems[item.id];
+      const itemEl=document.createElement("div");
+      itemEl.style.cssText=`display:flex;align-items:center;gap:8px;padding:8px 10px;background:${ckd?"#f0f0f0":"#fff"};border:0.5px solid ${ckd?"#e5e5e5":"#f0f0f0"};border-radius:6px`;
+      
+      const as=AS[item.area]||AS["ゴミ"];
+      itemEl.innerHTML=`
+        <div style="width:18px;height:18px;border-radius:4px;background:${ckd?as.c:"transparent"};border:1.5px solid ${ckd?as.c:"#ccc"};display:flex;align-items:center;justify-content:center;flex-shrink:0">
+          ${ckd?'<i class="ti ti-check" aria-hidden="true" style="font-size:11px;color:#fff"></i>':""}
+        </div>
+        <div style="flex:1">
+          <div style="font-size:13px;font-weight:500;${ckd?"color:#999;text-decoration:line-through":""}">${item.label}</div>
+          <div style="font-size:11px;color:#999;margin-top:2px">${item.detail}</div>
+        </div>
+      `;
+      areaList.appendChild(itemEl);
+    });
+    sheet.appendChild(areaList);
+  });
+  
+  modal.appendChild(sheet);
+  modal.setAttribute("data-modal","1");
+  document.body.appendChild(modal);
+  modal.onclick=(e)=>{if(e.target===modal) modal.remove();};
+}
+
+// CSSアニメーション追加（<style>内に追加）
+const style=document.createElement("style");
+style.textContent=`@keyframes slideUp{from{transform:translateY(100%)}to{transform:translateY(0)}}`;
+document.head.appendChild(style);
+
+(async function init(){
   today=getToday();
   loadNames();
   document.getElementById("home-dt").textContent=today.jp;
   document.getElementById("rec-dt") && (document.getElementById("rec-dt").textContent=today.jp);
-  loadTodayRecords();
+  await loadTodayRecords();
 })();
 </script>
 </body>
 </html>
- 
