@@ -326,7 +326,7 @@ button,input{font-family:inherit}
 </div>
 
 <script>
-const GAS_URL="https://script.google.com/macros/s/AKfycbyoQkjpLRFEjwT4PuPM8DZVKrA-nC_LWAtpscDh6Uiox9FRARu5ZhEiGZA1_M-WR5Qr/exec";
+const GAS_URL="https://script.google.com/macros/s/AKfycbzlIk8sdubn9tuBVlsMO7mE1l9cwvQCF-4Voo4OdI0zsPWpvzqJTl1tJiNH2z3bAhYd/exec";
 const STORAGE_KEY="daily-check-staff-v1";
 
 const OPENING_PROPS=["健康確認","手洗い実施","身だしなみ","冷蔵庫温度確認","原材料受入確認","交差汚染防止確認","調理器具殺菌確認","ガス電気点検","湯沸かし","作業場清掃消毒","ハイター済タオル干し","仕込み在庫補充","食洗機作動確認","ビールサーバー確認","ドリンク在庫補充","客席清掃消毒","カトラリー補充","消耗品補充","メニューブック消毒","ソフトクリームサーバー確認","トイレ洗浄消毒","床清掃","風除室清掃"];
@@ -415,27 +415,37 @@ function showScr(id){
 function toggleDebug(){
   const msg=`
 📊 デバッグ情報
-━━━━━━━━━━━━━━━━━━
-GAS URL: ${GAS_URL}
-本日: ${today.iso}
-Notionレコード: ${notionRecords.length}件
-ローカルrecords: ${records.length}件
-登録スタッフ: ${staffNames.length}人
+━━━━━━━━━━━━━━━━━━━━━━━━━
+✓ GAS URL: ${GAS_URL}
+✓ 本日: ${today.iso}
 
-【本日のNotionデータ】
-${notionRecords.length>0?notionRecords.map(r=>`
-✓ ${r.staff} - ${r.mode==="opening"?"開店前":"締め作業"}
-  完了: ${r.checks?.completed}/${r.checks?.total}
-  Status: ${r.status}`).join("\n"):"(記録なし)"}
+【アプリデータ】
+  Notionレコード: ${notionRecords.length}件
+  ローカルrecords: ${records.length}件
+  登録スタッフ: ${staffNames.length}人
 
-【コンソールを確認してください】
-ブラウザのF12 → Console タブ`;
+【Notionデータ詳細】
+${notionRecords.length>0?notionRecords.map((r,i)=>`
+[${i+1}] ${r.staff}
+    モード: ${r.mode==="opening"?"🌅 開店前":"🌙 締め作業"}
+    完了: ${r.checks?.completed||0}/${r.checks?.total||0}
+    Status: ${r.status||"未設定"}
+    Date: ${r.date}`).join(""):"(記録なし)"}
+
+【登録済みスタッフ】
+${staffNames.length>0?staffNames.map((s,i)=>`[${i+1}] ${s}`).join("\n"):"(未登録)"}
+
+【トラブルシューティング】
+✓ 本記事のコンソール(F12)でエラー確認
+✓ GASエディタ実行ログで testFetchToday() 確認`;
 
   alert(msg);
-  console.log("=== DEBUG INFO ===");
+  console.log("=== FULL DEBUG INFO ===");
+  console.log("GAS_URL:", GAS_URL);
   console.log("notionRecords:", notionRecords);
   console.log("records:", records);
   console.log("staffNames:", staffNames);
+  console.log("today:", today);
 }
 
 function loadNames(){
@@ -480,13 +490,17 @@ async function loadTodayRecords(){
  */
 function renderGaps(){
   const gapEl=document.getElementById("gap-list");
+  console.log("renderGaps - notionRecords:", notionRecords);
+  
   if(!notionRecords.length){
     document.getElementById("gap-widget").style.display="none";
+    console.log("renderGaps - no Notion records");
     return;
   }
 
   // 本日チェック済み：(スタッフ, モード) の組み合わせ
   const completed=new Set(notionRecords.map(r=>r.staff+"__"+r.mode));
+  console.log("Completed records:", Array.from(completed));
 
   // 未完了：登録済みスタッフ × 2モード
   const gaps=[];
@@ -497,6 +511,8 @@ function renderGaps(){
     if(!completed.has(cKey)) gaps.push({staff:s,mode:"closing",label:"🌙 締め作業"});
   });
 
+  console.log("Gaps found:", gaps);
+  
   document.getElementById("gap-widget").style.display=gaps.length?"block":"none";
   if(gaps.length){
     gapEl.innerHTML=gaps.slice(0,5).map(g=>`
@@ -514,8 +530,11 @@ function renderGaps(){
  * 本日の統計を表示
  */
 function renderStats(){
+  console.log("renderStats - notionRecords:", notionRecords);
+  
   if(!notionRecords.length){
     document.getElementById("stat-widget").style.display="none";
+    console.log("renderStats - no records");
     return;
   }
 
@@ -523,6 +542,8 @@ function renderStats(){
   const opening=notionRecords.filter(r=>r.mode==="opening").length;
   const closing=notionRecords.filter(r=>r.mode==="closing").length;
   const fullComplete=notionRecords.filter(r=>r.checks.completed===r.checks.total).length;
+
+  console.log("Stats - Total:", total, "Opening:", opening, "Closing:", closing, "Full:", fullComplete);
 
   document.getElementById("stat-widget").style.display="block";
   document.getElementById("stat-grid").innerHTML=`
@@ -552,6 +573,8 @@ function renderHomeRec(){
   const el=document.getElementById("home-rec");
   // Notionレコードを優先、なければローカルrecords
   const sourceRecs=notionRecords.length>0?notionRecords:records;
+  console.log("renderHomeRec - sourceRecs:", sourceRecs);
+  
   if(!sourceRecs.length){el.innerHTML='<div class="rp-empty">記録はまだありません</div>';return;}
   
   el.innerHTML=sourceRecs.slice(0,4).map(r=>{
