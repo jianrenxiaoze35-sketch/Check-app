@@ -197,6 +197,19 @@ button,input{font-family:inherit}
       <div class="gap-list" id="gap-list"></div>
     </div>
 
+    <!-- CHECKLIST SECTION -->
+    <div style="padding:12px 16px 0;display:flex;gap:6px;margin-bottom:8px;overflow-x:auto;scrollbar-width:none">
+      <button class="ft on" id="cl-op-tab" onclick="switchChecklistTab('opening')" style="background:#1a1a1a;color:#fff;border-color:transparent">🌅 開店前（23）</button>
+      <button class="ft" id="cl-cl-tab" onclick="switchChecklistTab('closing')">🌙 締め作業（14）</button>
+    </div>
+    
+    <div class="rp" style="margin-bottom:10px">
+      <div class="rp-head">
+        <span class="rp-title">CHECKLIST</span>
+      </div>
+      <div id="cl-list" style="max-height:300px;overflow-y:auto;font-size:12px"></div>
+    </div>
+
     <!-- RECORDS WIDGET -->
     <div class="rp">
       <div class="rp-head">
@@ -424,10 +437,64 @@ function showScr(id){
   t.scrollTop=0;
 }
 
+let checklistMode="opening";
+
 /**
- * デバッグ情報を表示
+ * チェックリストタブを切り替え
  */
-function toggleDebug(){
+function switchChecklistTab(mode){
+  checklistMode=mode;
+  ["cl-op-tab","cl-cl-tab"].forEach(id=>{
+    const btn=document.getElementById(id);
+    btn.classList.remove("on");
+    btn.style.background="transparent";btn.style.color="#666";btn.style.borderColor="#e0e0e0";
+  });
+  const tab=document.getElementById(mode==="opening"?"cl-op-tab":"cl-cl-tab");
+  tab.classList.add("on");
+  tab.style.background="#1a1a1a";tab.style.color="#fff";tab.style.borderColor="transparent";
+  renderChecklist();
+}
+
+/**
+ * チェックリストをレンダリング
+ */
+function renderChecklist(){
+  const el=document.getElementById("cl-list");
+  const modeItems=ITEMS[checklistMode]||[];
+  
+  // スタッフ×モード別のチェック状態を整理
+  const itemStatus={};
+  modeItems.forEach(item=>{
+    itemStatus[item.id]={label:item.label,checkers:[]};
+  });
+  
+  // Notionレコードからチェック状態を抽出
+  notionRecords.forEach(rec=>{
+    if(rec.mode===checklistMode&&rec.checks?.items){
+      Object.keys(rec.checks.items).forEach(itemId=>{
+        if(rec.checks.items[itemId]&&itemStatus[itemId]){
+          itemStatus[itemId].checkers.push(rec.staff);
+        }
+      });
+    }
+  });
+  
+  // レンダリング
+  el.innerHTML=modeItems.map(item=>{
+    const status=itemStatus[item.id];
+    const isChecked=status.checkers.length>0;
+    const as=AS[item.area]||AS["ゴミ"];
+    
+    return`<div style="padding:8px 0;border-bottom:0.5px solid #f0f0f0;display:flex;align-items:center;gap:8px">
+      <div style="color:${isChecked?as.c:"#ccc"};font-size:14px;min-width:16px;text-align:center">${isChecked?"✅":"○"}</div>
+      <div style="flex:1">
+        <div style="font-size:12px;font-weight:500;color:${isChecked?"#333":"#999"}">${item.label}</div>
+        <div style="font-size:10px;color:${isChecked?"#666":"#ccc"};margin-top:2px">${status.checkers.length>0?status.checkers.join(" / "):"-"}</div>
+      </div>
+      <span class="tag" style="font-size:9px;color:${as.c};border-color:${as.bd};background:${as.bg};margin:0">${item.area}</span>
+    </div>`;
+  }).join("");
+}
   const msg=`
 📊 デバッグ情報
 ━━━━━━━━━━━━━━━━━━━━━━━━━
@@ -489,6 +556,7 @@ async function loadTodayRecords(){
       console.log("Loaded " + notionRecords.length + " records from Notion");
       renderGaps();
       renderStats();
+      renderChecklist();
       renderHomeRec();
       return true;
     } else {
@@ -809,6 +877,7 @@ function renderCkBody(){
   const body=document.getElementById("ck-body");body.innerHTML="";
   const vis=filter==="all"?items:filter==="pending"?items.filter(i=>!checks[i.id]):items.filter(i=>i.area===filter);
   if(!vis.length){body.innerHTML='<div style="text-align:center;padding:48px 0;color:#aaa;font-size:13px">該当項目なし</div>';updCkBtn();return;}
+  
   let la=null;
   vis.forEach(item=>{
     if(item.area!==la){
@@ -818,6 +887,15 @@ function renderCkBody(){
       body.appendChild(d);la=item.area;
     }
     const ck=!!checks[item.id];const as=AS[item.area]||AS["ゴミ"];
+    
+    // 既に誰かがこの項目をチェックしたか確認
+    const alreadyChecked=[];
+    notionRecords.forEach(rec=>{
+      if(rec.mode===currentMode&&rec.checks?.items?.[item.id]){
+        alreadyChecked.push(rec.staff);
+      }
+    });
+    
     const btn=document.createElement("button");
     btn.className="ci"+(ck?" ck":"");
     btn.innerHTML=`
@@ -831,6 +909,7 @@ function renderCkBody(){
           <span class="abg">${item.area}</span>
         </div>
         <div class="ci-dt">${item.detail}</div>
+        ${alreadyChecked.length>0?`<div style="font-size:11px;color:#0F6E56;margin-top:4px;padding-top:4px;border-top:0.5px solid #e5e5e5">✅ 記入済み: ${alreadyChecked.join(" / ")}</div>`:""}
       </div>`;
     btn.onclick=()=>{checks[item.id]=!checks[item.id];renderCkBody();};
     body.appendChild(btn);
