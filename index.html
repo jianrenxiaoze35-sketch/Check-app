@@ -438,6 +438,46 @@ function showScr(id){
 }
 
 /**
+ * デバッグ情報を表示
+ */
+function toggleDebug(){
+  const msg=`
+📋 デバッグ情報
+━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+✓ GAS URL: ${GAS_URL}
+✓ 本日: ${today.iso}
+
+【アプリデータ】
+  Notionレコード: ${notionRecords.length}件
+  ローカルrecords: ${records.length}件
+  登録スタッフ: ${staffNames.length}人
+
+【Notionデータ詳細】
+${notionRecords.length>0?notionRecords.map((r,i)=>`
+[${i+1}] ${r.staff}
+    モード: ${r.mode==="opening"?"🌅 開店前":"🌙 締め作業"}
+    完了: ${r.checks?.completed||0}/${r.checks?.total||0}
+    Status: ${r.status||"未設定"}
+    Date: ${r.date}`).join(""):"(記録なし)"}
+
+【登録済みスタッフ】
+${staffNames.length>0?staffNames.map((s,i)=>`[${i+1}] ${s}`).join("\n"):"(未登録)"}
+
+【トラブルシューティング】
+✓ 本記事のコンソール(F12)でエラー確認
+✓ GASエディタ実行ログで testFetchToday() 確認`;
+
+  alert(msg);
+  console.log("=== FULL DEBUG INFO ===");
+  console.log("GAS_URL:", GAS_URL);
+  console.log("notionRecords:", notionRecords);
+  console.log("records:", records);
+  console.log("staffNames:", staffNames);
+  console.log("today:", today);
+}
+
+/**
  * チェックリストタブを切り替え
  */
 function switchChecklistTab(mode){
