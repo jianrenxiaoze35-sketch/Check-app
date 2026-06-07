@@ -48,6 +48,20 @@ button,input{font-family:inherit}
 .rp-row{display:flex;justify-content:space-between;align-items:center;padding:6px 0;border-bottom:0.5px solid #f0f0f0}
 .rp-row:last-child{border-bottom:none}
 .rp-empty{font-size:12px;color:#aaa;text-align:center;padding:10px 0}
+/* GAPS WIDGET */
+.gap-widget{background:#fff;border:0.5px solid #e5e5e5;border-radius:12px;padding:14px 16px;margin-bottom:10px}
+.gap-title{font-size:11px;font-weight:500;color:#666;letter-spacing:.1em;margin-bottom:10px}
+.gap-list{display:flex;flex-direction:column;gap:6px}
+.gap-item{display:flex;align-items:center;gap:8px;padding:8px 10px;background:#FCEBEB;border:0.5px solid #E24B4A;border-radius:8px;font-size:12px;color:#A32D2D}
+.gap-item i{flex-shrink:0}
+.gap-empty{font-size:12px;color:#0F6E56;text-align:center;padding:16px 0;font-weight:500}
+/* STATS WIDGET */
+.stat-widget{background:#fff;border:0.5px solid #e5e5e5;border-radius:12px;padding:12px 16px;margin-bottom:10px}
+.stat-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:10px}
+.stat-box{background:#f5f5f5;border-radius:8px;padding:10px;text-align:center}
+.stat-lbl{font-size:10px;color:#999;margin-bottom:4px}
+.stat-val{font-size:16px;font-weight:500}
+.stat-sub{font-size:11px;color:#666;margin-top:2px}
 /* MANAGER */
 .mgr-inner{flex:1;overflow-y:auto;padding:16px 16px 40px}
 .staff-item{display:flex;align-items:center;gap:10px;padding:10px 12px;background:#fff;border:0.5px solid #e5e5e5;border-radius:8px;margin-bottom:6px}
@@ -166,6 +180,19 @@ button,input{font-family:inherit}
     </button>
   </div>
   <div class="h-bottom">
+    <!-- STATS WIDGET -->
+    <div class="stat-widget" id="stat-widget" style="display:none">
+      <div style="font-size:11px;font-weight:500;color:#666;letter-spacing:.1em;margin-bottom:10px">TODAY'S SUMMARY</div>
+      <div class="stat-grid" id="stat-grid"></div>
+    </div>
+
+    <!-- GAPS WIDGET -->
+    <div class="gap-widget" id="gap-widget" style="display:none">
+      <div class="gap-title">PENDING CHECKS</div>
+      <div class="gap-list" id="gap-list"></div>
+    </div>
+
+    <!-- RECORDS WIDGET -->
     <div class="rp">
       <div class="rp-head">
         <span class="rp-title">TODAY'S RECORDS</span>
@@ -355,7 +382,7 @@ const AS={
   ゴミ:{c:"#444441",bg:"#F1EFE8",bd:"#B4B2A9"},
 };
 
-let currentMode=null,today={},items=[],checks={},staff="",filter="all",sending=false,records=[];
+let currentMode=null,today={},items=[],checks={},staff="",filter="all",sending=false,records=[],notionRecords={};
 let staffNames=[];
 
 function getToday(){
@@ -388,6 +415,96 @@ function loadNames(){
 }
 function saveNames(){
   try{localStorage.setItem(STORAGE_KEY,JSON.stringify(staffNames));}catch(_){}
+}
+
+/**
+ * GASからNotionの本日記録を取得
+ */
+async function loadTodayRecords(){
+  try{
+    const res=await fetch(GAS_URL+"?action=fetchTodayRecords",{method:"GET"});
+    const data=await res.json();
+    if(data.ok && data.data){
+      notionRecords=data.data.opening.concat(data.data.closing);
+      renderGaps();
+      renderStats();
+    }
+  }catch(err){
+    console.error("Notion記録取得エラー:",err);
+  }
+}
+
+/**
+ * 未完了チェック（ギャップ）を表示
+ */
+function renderGaps(){
+  const gapEl=document.getElementById("gap-list");
+  if(!notionRecords.length){
+    document.getElementById("gap-widget").style.display="none";
+    return;
+  }
+
+  // 本日チェック済み：(スタッフ, モード) の組み合わせ
+  const completed=new Set(notionRecords.map(r=>r.staff+"__"+r.mode));
+
+  // 未完了：登録済みスタッフ × 2モード
+  const gaps=[];
+  staffNames.forEach(s=>{
+    const oKey=s+"__opening";
+    const cKey=s+"__closing";
+    if(!completed.has(oKey)) gaps.push({staff:s,mode:"opening",label:"🌅 開店前"});
+    if(!completed.has(cKey)) gaps.push({staff:s,mode:"closing",label:"🌙 締め作業"});
+  });
+
+  document.getElementById("gap-widget").style.display=gaps.length?"block":"none";
+  if(gaps.length){
+    gapEl.innerHTML=gaps.slice(0,5).map(g=>`
+      <div class="gap-item">
+        <i class="ti ti-alert-circle" aria-hidden="true"></i>
+        <span><strong>${g.staff}</strong> — ${g.label}</span>
+      </div>`).join("");
+    if(gaps.length>5) gapEl.innerHTML+=`<div style="font-size:11px;color:#999;text-align:center;margin-top:6px">+${gaps.length-5}件</div>`;
+  } else {
+    gapEl.innerHTML=`<div class="gap-empty">✅ 本日のチェック完了</div>`;
+  }
+}
+
+/**
+ * 本日の統計を表示
+ */
+function renderStats(){
+  if(!notionRecords.length){
+    document.getElementById("stat-widget").style.display="none";
+    return;
+  }
+
+  const total=notionRecords.length;
+  const opening=notionRecords.filter(r=>r.mode==="opening").length;
+  const closing=notionRecords.filter(r=>r.mode==="closing").length;
+  const fullComplete=notionRecords.filter(r=>r.checks.completed===r.checks.total).length;
+
+  document.getElementById("stat-widget").style.display="block";
+  document.getElementById("stat-grid").innerHTML=`
+    <div class="stat-box">
+      <div class="stat-lbl">本日チェック数</div>
+      <div class="stat-val">${total}</div>
+      <div class="stat-sub">件</div>
+    </div>
+    <div class="stat-box">
+      <div class="stat-lbl">開店前</div>
+      <div class="stat-val">${opening}</div>
+      <div class="stat-sub">件完了</div>
+    </div>
+    <div class="stat-box">
+      <div class="stat-lbl">締め作業</div>
+      <div class="stat-val">${closing}</div>
+      <div class="stat-sub">件完了</div>
+    </div>
+    <div class="stat-box">
+      <div class="stat-lbl">100%完了</div>
+      <div class="stat-val" style="color:${fullComplete===total?"#0F6E56":"#A32D2D"}">${fullComplete}</div>
+      <div class="stat-sub">件</div>
+    </div>`;
 }
 
 function renderHomeRec(){
@@ -427,14 +544,14 @@ function addStaff(){
   if(staffNames.includes(name)){err.textContent=`「${name}」はすでに登録されています`;err.classList.add("on");return;}
   err.classList.remove("on");
   staffNames.push(name);saveNames();
-  inp.value="";renderMgrList();
+  inp.value="";renderMgrList();renderGaps();
   showToast(`「${name}」を登録しました`);
 }
 
 function removeStaff(i){
   const name=staffNames[i];
   staffNames.splice(i,1);saveNames();
-  renderMgrList();
+  renderMgrList();renderGaps();
   showToast(`「${name}」を削除しました`);
 }
 
@@ -656,6 +773,7 @@ function showDone(cd,ct,haccpOk,notionOk){
     {l:"Notion",v:notionOk?"✓ 記録済み":"要確認",danger:!notionOk},
   ].map(s=>`<div class="done-st"><div class="done-sl">${s.l}</div><div class="done-sv" style="color:${s.danger?"#A32D2D":ac}">${s.v}</div></div>`).join("");
   renderHomeRec();
+  loadTodayRecords();
   showScr("done-scr");
 }
 
@@ -695,6 +813,7 @@ function filterRec(f){
   loadNames();
   document.getElementById("home-dt").textContent=today.jp;
   document.getElementById("rec-dt") && (document.getElementById("rec-dt").textContent=today.jp);
+  loadTodayRecords();
 })();
 </script>
 </body>
