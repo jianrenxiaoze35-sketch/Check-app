@@ -415,7 +415,7 @@ const AS={
   ゴミ:{c:"#444441",bg:"#F1EFE8",bd:"#B4B2A9"},
 };
 
-let currentMode=null,today={},items=[],checks={},staff="",filter="all",sending=false,records=[],notionRecords={};
+let currentMode=null,today={},items=[],checks={},staff="",filter="all",sending=false,records=[],notionRecords=[],checklistMode="opening";
 let staffNames=[];
 
 function getToday(){
@@ -436,8 +436,6 @@ function showScr(id){
   t.classList.add("on");t.style.display="flex";
   t.scrollTop=0;
 }
-
-let checklistMode="opening";
 
 /**
  * チェックリストタブを切り替え
@@ -460,7 +458,10 @@ function switchChecklistTab(mode){
  */
 function renderChecklist(){
   const el=document.getElementById("cl-list");
+  if(!el) return; // 要素がない場合は何もしない
+  
   const modeItems=ITEMS[checklistMode]||[];
+  console.log("renderChecklist - mode:", checklistMode, "items count:", modeItems.length);
   
   // スタッフ×モード別のチェック状態を整理
   const itemStatus={};
@@ -469,15 +470,17 @@ function renderChecklist(){
   });
   
   // Notionレコードからチェック状態を抽出
-  notionRecords.forEach(rec=>{
-    if(rec.mode===checklistMode&&rec.checks?.items){
-      Object.keys(rec.checks.items).forEach(itemId=>{
-        if(rec.checks.items[itemId]&&itemStatus[itemId]){
-          itemStatus[itemId].checkers.push(rec.staff);
-        }
-      });
-    }
-  });
+  if(Array.isArray(notionRecords)){
+    notionRecords.forEach(rec=>{
+      if(rec.mode===checklistMode&&rec.checks?.items){
+        Object.keys(rec.checks.items).forEach(itemId=>{
+          if(rec.checks.items[itemId]&&itemStatus[itemId]){
+            itemStatus[itemId].checkers.push(rec.staff);
+          }
+        });
+      }
+    });
+  }
   
   // レンダリング
   el.innerHTML=modeItems.map(item=>{
@@ -487,11 +490,11 @@ function renderChecklist(){
     
     return`<div style="padding:8px 0;border-bottom:0.5px solid #f0f0f0;display:flex;align-items:center;gap:8px">
       <div style="color:${isChecked?as.c:"#ccc"};font-size:14px;min-width:16px;text-align:center">${isChecked?"✅":"○"}</div>
-      <div style="flex:1">
+      <div style="flex:1;min-width:0">
         <div style="font-size:12px;font-weight:500;color:${isChecked?"#333":"#999"}">${item.label}</div>
         <div style="font-size:10px;color:${isChecked?"#666":"#ccc"};margin-top:2px">${status.checkers.length>0?status.checkers.join(" / "):"-"}</div>
       </div>
-      <span class="tag" style="font-size:9px;color:${as.c};border-color:${as.bd};background:${as.bg};margin:0">${item.area}</span>
+      <span class="tag" style="font-size:9px;color:${as.c};border-color:${as.bd};background:${as.bg};margin:0;flex-shrink:0">${item.area}</span>
     </div>`;
   }).join("");
 }
