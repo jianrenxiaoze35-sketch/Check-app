@@ -32,6 +32,38 @@ body { font-family: -apple-system, BlinkMacSystemFont, 'Hiragino Sans', sans-ser
 .staff-item { display: flex; align-items: center; gap: 10px; padding: 10px 0; border-bottom: 1px solid #f0f0f0; }
 .staff-item:last-child { border-bottom: none; }
 .warning { background: #fee; border: 1px solid #f7c1c1; border-radius: 8px; padding: 10px; color: #c33; font-size: 12px; margin-bottom: 12px; }
+
+/* サマリーカード専用スタイル */
+.summary-card { background: #fff; border: 1px solid #e0e0e0; border-radius: 8px; margin-bottom: 8px; overflow: hidden; }
+.summary-header { padding: 10px 12px; cursor: pointer; user-select: none; display: flex; justify-content: space-between; align-items: center; }
+.summary-header:hover { background: #f8f9fa; }
+.summary-header-left { display: flex; align-items: center; gap: 8px; }
+.summary-title { font-weight: 600; font-size: 14px; }
+.summary-badge { font-size: 11px; padding: 2px 8px; border-radius: 12px; font-weight: 500; }
+.summary-badge.good { background: #e8f5e9; color: #0F6E56; }
+.summary-badge.warn { background: #fff3e0; color: #e65100; }
+.summary-badge.empty { background: #f5f5f5; color: #999; }
+.summary-chevron { font-size: 12px; color: #999; transition: transform 0.2s; }
+.summary-chevron.open { transform: rotate(180deg); }
+.summary-body { border-top: 1px solid #f0f0f0; display: none; }
+.summary-body.open { display: block; }
+.summary-progress { padding: 8px 12px; }
+.summary-progress-label { display: flex; justify-content: space-between; font-size: 11px; color: #666; margin-bottom: 4px; }
+.progress-enhanced { width: 100%; height: 6px; background: #e0e0e0; border-radius: 3px; overflow: hidden; }
+.progress-enhanced-bar { height: 100%; border-radius: 3px; transition: width 0.3s; }
+.progress-enhanced-bar.good { background: #0F6E56; }
+.progress-enhanced-bar.warn { background: #ff9800; }
+.progress-enhanced-bar.poor { background: #f44336; }
+.summary-items { padding: 8px 12px; }
+.summary-items-title { font-size: 11px; color: #999; font-weight: 500; margin-bottom: 6px; }
+.item-grid { display: flex; flex-wrap: wrap; gap: 4px; }
+.item-badge { display: inline-flex; align-items: center; gap: 4px; padding: 3px 8px; border-radius: 4px; font-size: 11px; }
+.item-badge.done { background: #e8f5e9; color: #0F6E56; }
+.item-badge.undone { background: #fce8e6; color: #c5221f; }
+.summary-staff { padding: 6px 12px; font-size: 12px; color: #666; border-top: 1px solid #f5f5f5; }
+.summary-links { padding: 8px 12px; display: flex; gap: 8px; }
+.notion-link { display: inline-flex; align-items: center; gap: 4px; padding: 4px 8px; background: #f5f5f5; border: 1px solid #e0e0e0; border-radius: 4px; text-decoration: none; font-size: 11px; color: #555; }
+.notion-link:hover { background: #ebebeb; }
 </style>
 </head>
 <body>
@@ -40,19 +72,45 @@ body { font-family: -apple-system, BlinkMacSystemFont, 'Hiragino Sans', sans-ser
 <div id="home" class="scr on">
   <div class="hdr"><h1 class="hdr-title">Daily Check</h1></div>
   <div class="content">
-    <div style="padding: 20px 0; text-align: center; margin-bottom: 16px;">
-      <div style="font-size: 36px; margin-bottom: 10px;">📋</div>
-      <h2 style="font-size: 20px;">Daily Check</h2>
+    <div style="padding: 16px 0 12px; text-align: center;">
+      <div style="font-size: 32px; margin-bottom: 6px;">📋</div>
+      <h2 style="font-size: 18px;">Daily Check</h2>
+      <div id="home-date" style="font-size: 12px; color: #999; margin-top: 4px;"></div>
     </div>
-    
-    <div class="card" style="margin-bottom: 12px;">
-      <div style="font-size: 11px; color: #999; margin-bottom: 8px; font-weight: 500;">本日の状況</div>
-      <div id="home-stats" style="font-size: 13px; color: #666; line-height: 1.6;"></div>
+
+    <!-- 開店前サマリー -->
+    <div class="summary-card">
+      <div class="summary-header" onclick="toggleSummary('opening')">
+        <div class="summary-header-left">
+          <span>🌅</span>
+          <span class="summary-title">開店前チェック</span>
+          <span class="summary-badge empty" id="opening-badge">読込中</span>
+        </div>
+        <span class="summary-chevron" id="opening-chevron">▼</span>
+      </div>
+      <div class="summary-body" id="opening-body">
+        <div style="padding: 12px; color: #999; font-size: 13px;">読み込み中...</div>
+      </div>
+    </div>
+
+    <!-- 締め作業サマリー -->
+    <div class="summary-card">
+      <div class="summary-header" onclick="toggleSummary('closing')">
+        <div class="summary-header-left">
+          <span>🌙</span>
+          <span class="summary-title">締め作業チェック</span>
+          <span class="summary-badge empty" id="closing-badge">読込中</span>
+        </div>
+        <span class="summary-chevron" id="closing-chevron">▼</span>
+      </div>
+      <div class="summary-body" id="closing-body">
+        <div style="padding: 12px; color: #999; font-size: 13px;">読み込み中...</div>
+      </div>
     </div>
 
     <button class="btn btn-primary" onclick="startMode('opening')" style="margin-bottom: 8px;">🌅 開店前チェック</button>
     <button class="btn btn-secondary" onclick="startMode('closing')" style="margin-bottom: 8px;">🌙 締め作業チェック</button>
-    <button class="btn-text" onclick="showScr('staff-mgr')">👥 スタッフ管理</button>
+    <button class="btn-text" onclick="showScr('staff-mgr')" style="width: 100%; text-align: center;">👥 スタッフ管理</button>
   </div>
 </div>
 
@@ -151,18 +209,52 @@ body { font-family: -apple-system, BlinkMacSystemFont, 'Hiragino Sans', sans-ser
 const GAS_URL = "https://script.google.com/macros/s/AKfycbx1HFdaD6webHg9xrCgiGcEVMj_1NfN_vBqGwHfZ-Rwu0fdFxiFcupKfHWI7Fbli2AqOA/exec";
 const STORAGE_KEY = "daily-check-staffs";
 
+// ★★★ Notion DB のブラウザ閲覧URL（要設定）★★★
+const NOTION_DB_URL = {
+  opening: "https://www.notion.so/73ff570b9c2a4351b19df2b5451e79bd",
+  closing: "https://www.notion.so/305fa1bec3b94f8483b1adc0688c27c2",
+};
+
 let currentMode = null;
 let staff = "";
 let checks = {};
 let staffs = [];
 let checkItems = { opening: [], closing: [] };
 let notionRecords = [];
+let summaryOpen = { opening: false, closing: false };
 
+// ============================================================
+//  画面制御・日付表示
+// ============================================================
 function showScr(id) {
   document.querySelectorAll(".scr").forEach(s => s.classList.remove("on"));
   document.getElementById(id).classList.add("on");
 }
 
+function toggleSummary(mode) {
+  summaryOpen[mode] = !summaryOpen[mode];
+  const body = document.getElementById(mode + "-body");
+  const chevron = document.getElementById(mode + "-chevron");
+  
+  if (summaryOpen[mode]) {
+    body.classList.add("open");
+    chevron.classList.add("open");
+  } else {
+    body.classList.remove("open");
+    chevron.classList.remove("open");
+  }
+}
+
+function renderDate() {
+  const now = new Date();
+  const days = ["日", "月", "火", "水", "木", "金", "土"];
+  const dateStr = `${now.getFullYear()}年${now.getMonth() + 1}月${now.getDate()}日（${days[now.getDay()]}）`;
+  document.getElementById("home-date").textContent = dateStr;
+}
+
+// ============================================================
+//  スタッフ管理
+// ============================================================
 function loadStaffs() {
   try {
     const saved = localStorage.getItem(STORAGE_KEY);
@@ -202,6 +294,9 @@ function renderStaffList() {
   document.getElementById("staff-list").innerHTML = html || "<div style='color: #999; font-size: 12px;'>登録済みスタッフなし</div>";
 }
 
+// ============================================================
+//  チェック項目・記録取得
+// ============================================================
 async function loadCheckItems(mode) {
   try {
     const res = await fetch(GAS_URL, {
@@ -212,7 +307,7 @@ async function loadCheckItems(mode) {
     const data = await res.json();
     if (data.ok) {
       checkItems[mode] = data.items || [];
-      console.log("Loaded " + mode + " items: " + checkItems[mode].length);
+      updateSummary(); // 項目取得後にサマリー更新
     }
   } catch (err) { console.log("Load items error:", err); }
 }
@@ -227,25 +322,121 @@ async function loadTodayRecords() {
     const data = await res.json();
     if (data.ok && data.data) {
       notionRecords = [...(data.data.opening || []), ...(data.data.closing || [])];
-      renderStats();
+      updateSummary();
     }
   } catch (err) { console.log("Load error:", err); }
 }
 
-function renderStats() {
-  if (!notionRecords.length) {
-    document.getElementById("home-stats").innerHTML = "<div style='color: #999;'>本日のチェック記録なし</div>";
+// ============================================================
+//  サマリー表示
+// ============================================================
+function updateSummary() {
+  renderModeSummary("opening");
+  renderModeSummary("closing");
+}
+
+function renderModeSummary(mode) {
+  const badge = document.getElementById(mode + "-badge");
+  const body = document.getElementById(mode + "-body");
+  const records = notionRecords.filter(r => r.mode === mode);
+  const items = checkItems[mode] || [];
+
+  if (items.length === 0) {
+    badge.textContent = "項目取得中";
+    badge.className = "summary-badge empty";
+    body.innerHTML = "<div style='padding: 12px; color: #999;'>項目を読み込み中...</div>";
     return;
   }
-  const opening = notionRecords.filter(r => r.mode === "opening");
-  const closing = notionRecords.filter(r => r.mode === "closing");
-  document.getElementById("home-stats").innerHTML = `
-    <div>🌅 開店前: ${opening.length}件</div>
-    <div>🌙 締め作業: ${closing.length}件</div>
-    <div style="margin-top: 4px;">計: ${notionRecords.length}件</div>
+
+  if (records.length === 0) {
+    badge.textContent = "記録なし";
+    badge.className = "summary-badge empty";
+    body.innerHTML = renderEmptyBody(mode);
+    return;
+  }
+
+  // 達成率計算
+  let totalCompleted = 0, totalItems = 0;
+  records.forEach(r => {
+    totalCompleted += r.checks.completed;
+    totalItems += r.checks.total;
+  });
+  const rate = totalItems > 0 ? Math.round((totalCompleted / totalItems) * 100) : 0;
+
+  // バッジ更新
+  badge.textContent = `${records.length}件 / ${rate}%`;
+  badge.className = `summary-badge ${rate >= 80 ? 'good' : 'warn'}`;
+
+  // ボディ更新
+  body.innerHTML = renderSummaryBody(mode, records, items, rate, totalCompleted, totalItems);
+}
+
+function renderEmptyBody(mode) {
+  const dbUrl = NOTION_DB_URL[mode];
+  return `
+    <div style="padding: 12px; color: #999; font-size: 13px;">本日の記録はまだありません</div>
+    <div class="summary-links">
+      <a href="${dbUrl}" target="_blank" class="notion-link">
+        <span>🔗</span> Notionで開く
+      </a>
+    </div>
   `;
 }
 
+function renderSummaryBody(mode, records, items, rate, totalCompleted, totalItems) {
+  const dbUrl = NOTION_DB_URL[mode];
+
+  // プログレスバー色分け
+  const progressClass = rate >= 80 ? 'good' : rate >= 60 ? 'warn' : 'poor';
+
+  // スタッフ一覧
+  const staffList = [...new Set(records.map(r => r.staff))].join(", ");
+
+  // 項目別完了状況
+  const itemStatusMap = {};
+  items.forEach(item => {
+    const completedByAnyone = records.some(r => r.checks?.items?.[item.label]);
+    itemStatusMap[item.label] = completedByAnyone;
+  });
+
+  const itemBadges = items.map(item => {
+    const isCompleted = itemStatusMap[item.label];
+    return `<span class="item-badge ${isCompleted ? 'done' : 'undone'}">
+      ${isCompleted ? '✅' : '❌'} ${item.label}
+    </span>`;
+  }).join("");
+
+  return `
+    <div class="summary-progress">
+      <div class="summary-progress-label">
+        <span>達成率</span>
+        <span>${totalCompleted}/${totalItems} (${rate}%)</span>
+      </div>
+      <div class="progress-enhanced">
+        <div class="progress-enhanced-bar ${progressClass}" style="width: ${rate}%;"></div>
+      </div>
+    </div>
+
+    <div class="summary-items">
+      <div class="summary-items-title">項目別状況</div>
+      <div class="item-grid">${itemBadges}</div>
+    </div>
+
+    <div class="summary-staff">
+      👥 担当者: ${staffList} (${records.length}件)
+    </div>
+
+    <div class="summary-links">
+      <a href="${dbUrl}" target="_blank" class="notion-link">
+        <span>🔗</span> Notionで開く
+      </a>
+    </div>
+  `;
+}
+
+// ============================================================
+//  チェック処理（既存機能）
+// ============================================================
 function startMode(m) {
   currentMode = m;
   checks = {};
@@ -336,7 +527,7 @@ async function send() {
     
     if (data.ok) {
       showScr("done");
-      await loadTodayRecords();
+      await loadTodayRecords(); // 送信後にサマリー更新
     } else {
       alert("エラー: " + data.error);
     }
@@ -353,12 +544,16 @@ function goHome() {
   loadTodayRecords();
 }
 
+// ============================================================
+//  初期化
+// ============================================================
 document.addEventListener("DOMContentLoaded", () => {
+  renderDate();
   loadStaffs();
   loadCheckItems("opening");
   loadCheckItems("closing");
   loadTodayRecords();
-  setInterval(loadTodayRecords, 5000);
+  setInterval(loadTodayRecords, 8000); // 8秒間隔で自動更新
 });
 </script>
 </body>
