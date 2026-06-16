@@ -355,21 +355,31 @@ function renderModeSummary(mode) {
     return;
   }
 
-  // 達成率計算
-  let totalCompleted = 0, totalItems = 0;
-  records.forEach(r => {
-    totalCompleted += r.checks.completed;
-    totalItems += r.checks.total;
+  // ★修正部分：正しい達成率計算
+  const totalItems = items.length; // 母数はチェック項目数に固定
+  
+  // 項目別完了状況を一度だけ計算（効率化）
+  const itemStatusMap = {};
+  let totalCompleted = 0;
+  
+  items.forEach(item => {
+    const completedByAnyone = records.some(r => r.checks?.items?.[item.label]);
+    itemStatusMap[item.label] = completedByAnyone;
+    if (completedByAnyone) {
+      totalCompleted++;
+    }
   });
+
   const rate = totalItems > 0 ? Math.round((totalCompleted / totalItems) * 100) : 0;
 
   // バッジ更新
   badge.textContent = `${records.length}件 / ${rate}%`;
   badge.className = `summary-badge ${rate >= 80 ? 'good' : 'warn'}`;
 
-  // ボディ更新
-  body.innerHTML = renderSummaryBody(mode, records, items, rate, totalCompleted, totalItems);
+  // ボディ更新（itemStatusMapを渡して重複計算を回避）
+  body.innerHTML = renderSummaryBody(mode, records, items, rate, totalCompleted, totalItems, itemStatusMap);
 }
+
 
 function renderEmptyBody(mode) {
   const dbUrl = NOTION_DB_URL[mode];
