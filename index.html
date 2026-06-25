@@ -13,6 +13,7 @@ body { font-family: -apple-system, BlinkMacSystemFont, 'Hiragino Sans', sans-ser
 .hdr { background: #fff; padding: 12px 16px; border-bottom: 1px solid #e0e0e0; display: flex; align-items: center; gap: 10px; }
 .hdr-back { width: 32px; height: 32px; border: none; background: #f5f5f5; border-radius: 8px; cursor: pointer; }
 .hdr-title { flex: 1; font-weight: 500; }
+.hdr-icon { width: 32px; height: 32px; border: none; background: #f5f5f5; border-radius: 8px; cursor: pointer; font-size: 16px; }
 .content { flex: 1; overflow-y: auto; padding: 16px; }
 .btn { padding: 12px 16px; border: none; border-radius: 8px; cursor: pointer; font-size: 14px; font-weight: 500; width: 100%; }
 .btn-primary { background: #0F6E56; color: #fff; }
@@ -32,7 +33,13 @@ body { font-family: -apple-system, BlinkMacSystemFont, 'Hiragino Sans', sans-ser
 .staff-item { display: flex; align-items: center; gap: 10px; padding: 10px 0; border-bottom: 1px solid #f0f0f0; }
 .staff-item:last-child { border-bottom: none; }
 .warning { background: #fee; border: 1px solid #f7c1c1; border-radius: 8px; padding: 10px; color: #c33; font-size: 12px; margin-bottom: 12px; }
-
+.info-box { background: #eef6ff; border: 1px solid #bcdcff; border-radius: 8px; padding: 10px; color: #1a5fa8; font-size: 12px; margin-bottom: 12px; }
+.success-box { background: #e8f5e9; border: 1px solid #b8e0bb; border-radius: 8px; padding: 10px; color: #1d7a34; font-size: 12px; margin-bottom: 12px; }
+.field-label { display: block; font-size: 12px; color: #666; margin-bottom: 4px; }
+.status-row { display: flex; align-items: center; gap: 6px; font-size: 12px; color: #666; margin-bottom: 12px; }
+.status-dot { width: 8px; height: 8px; border-radius: 50%; background: #999; }
+.status-dot.ok { background: #0F6E56; }
+.status-dot.bad { background: #c33; }
 /* サマリーカード専用スタイル */
 .summary-card { background: #fff; border: 1px solid #e0e0e0; border-radius: 8px; margin-bottom: 8px; overflow: hidden; }
 .summary-header { padding: 10px 12px; cursor: pointer; user-select: none; display: flex; justify-content: space-between; align-items: center; }
@@ -67,17 +74,21 @@ body { font-family: -apple-system, BlinkMacSystemFont, 'Hiragino Sans', sans-ser
 </style>
 </head>
 <body>
-
 <!-- HOME -->
 <div id="home" class="scr on">
-  <div class="hdr"><h1 class="hdr-title">Daily Check</h1></div>
+  <div class="hdr">
+    <h1 class="hdr-title">Daily Check</h1>
+    <button class="hdr-icon" onclick="openSettings()" title="設定">⚙️</button>
+  </div>
   <div class="content">
     <div style="padding: 16px 0 12px; text-align: center;">
       <div style="font-size: 32px; margin-bottom: 6px;">📋</div>
       <h2 style="font-size: 18px;">Daily Check</h2>
       <div id="home-date" style="font-size: 12px; color: #999; margin-top: 4px;"></div>
     </div>
-
+    <div id="home-no-url-warning" class="warning" style="display: none;">
+      ⚠️ GASのデプロイURLが設定されていません。「⚙️ 設定」からURLを登録してください。
+    </div>
     <!-- 開店前サマリー -->
     <div class="summary-card">
       <div class="summary-header" onclick="toggleSummary('opening')">
@@ -92,7 +103,6 @@ body { font-family: -apple-system, BlinkMacSystemFont, 'Hiragino Sans', sans-ser
         <div style="padding: 12px; color: #999; font-size: 13px;">読み込み中...</div>
       </div>
     </div>
-
     <!-- 締め作業サマリー -->
     <div class="summary-card">
       <div class="summary-header" onclick="toggleSummary('closing')">
@@ -107,13 +117,33 @@ body { font-family: -apple-system, BlinkMacSystemFont, 'Hiragino Sans', sans-ser
         <div style="padding: 12px; color: #999; font-size: 13px;">読み込み中...</div>
       </div>
     </div>
-
     <button class="btn btn-primary" onclick="startMode('opening')" style="margin-bottom: 8px;">🌅 開店前チェック</button>
     <button class="btn btn-secondary" onclick="startMode('closing')" style="margin-bottom: 8px;">🌙 締め作業チェック</button>
     <button class="btn-text" onclick="showScr('staff-mgr')" style="width: 100%; text-align: center;">👥 スタッフ管理</button>
   </div>
 </div>
-
+<!-- SETTINGS -->
+<div id="settings" class="scr">
+  <div class="hdr">
+    <button class="hdr-back" onclick="showScr('home')">←</button>
+    <h1 class="hdr-title">設定</h1>
+  </div>
+  <div class="content">
+    <div class="info-box">
+      GAS（Google Apps Script）の「デプロイ」→「ウェブアプリ」で発行されたURLを貼り付けて保存してください。
+    </div>
+    <label class="field-label">GAS デプロイURL</label>
+    <input type="text" id="settings-url-input" class="input" placeholder="https://script.google.com/macros/s/.../exec">
+    <div id="settings-err" style="color: #c33; font-size: 12px; display: none; margin-bottom: 8px;"></div>
+    <div class="status-row">
+      <span class="status-dot" id="settings-status-dot"></span>
+      <span id="settings-status-text">未確認</span>
+    </div>
+    <button class="btn btn-secondary" onclick="testGasUrl()" style="margin-bottom: 8px;">接続テスト</button>
+    <button class="btn btn-primary" onclick="saveGasUrl()" style="margin-bottom: 8px;">保存する</button>
+    <button class="btn-text" onclick="clearGasUrl()" style="width: 100%; text-align: center;">URLをリセット</button>
+  </div>
+</div>
 <!-- STAFF MANAGER -->
 <div id="staff-mgr" class="scr">
   <div class="hdr">
@@ -132,7 +162,6 @@ body { font-family: -apple-system, BlinkMacSystemFont, 'Hiragino Sans', sans-ser
     <div id="staff-list"></div>
   </div>
 </div>
-
 <!-- STAFF SELECT -->
 <div id="staff" class="scr">
   <div class="hdr">
@@ -149,7 +178,6 @@ body { font-family: -apple-system, BlinkMacSystemFont, 'Hiragino Sans', sans-ser
     <button class="btn btn-primary" onclick="toCheck()">チェック開始</button>
   </div>
 </div>
-
 <!-- CHECK -->
 <div id="check" class="scr">
   <div class="hdr">
@@ -158,7 +186,7 @@ body { font-family: -apple-system, BlinkMacSystemFont, 'Hiragino Sans', sans-ser
   </div>
   <div class="content">
     <div style="margin-bottom: 12px;">
-      <span id="check-staff" style="font-weight: 500;"></span> - 
+      <span id="check-staff" style="font-weight: 500;"></span> -
       <span id="check-mode" style="color: #666;"></span>
     </div>
     <div class="progress"><div class="progress-bar" id="progress-bar"></div></div>
@@ -169,7 +197,6 @@ body { font-family: -apple-system, BlinkMacSystemFont, 'Hiragino Sans', sans-ser
     <button class="btn btn-primary" onclick="toConfirm()">確認へ</button>
   </div>
 </div>
-
 <!-- CONFIRM -->
 <div id="confirm" class="scr">
   <div class="hdr">
@@ -194,7 +221,6 @@ body { font-family: -apple-system, BlinkMacSystemFont, 'Hiragino Sans', sans-ser
     <button class="btn btn-primary" id="send-btn" onclick="send()">Notionに記録</button>
   </div>
 </div>
-
 <!-- DONE -->
 <div id="done" class="scr">
   <div class="content" style="display: flex; flex-direction: column; justify-content: center; align-items: center;">
@@ -204,17 +230,16 @@ body { font-family: -apple-system, BlinkMacSystemFont, 'Hiragino Sans', sans-ser
     <button class="btn btn-primary" onclick="goHome()" style="max-width: 200px;">ホームに戻る</button>
   </div>
 </div>
-
 <script>
-const GAS_URL = "https://script.google.com/macros/s/AKfycbx1HFdaD6webHg9xrCgiGcEVMj_1NfN_vBqGwHfZ-Rwu0fdFxiFcupKfHWI7Fbli2AqOA/exec";
+// デフォルトのGAS URL（未設定時のフォールバック。空文字でも構いません）
+const DEFAULT_GAS_URL = "";
+const GAS_URL_STORAGE_KEY = "daily-check-gas-url";
 const STORAGE_KEY = "daily-check-staffs";
-
 // ★★★ Notion DB のブラウザ閲覧URL（要設定）★★★
 const NOTION_DB_URL = {
   opening: "https://www.notion.so/73ff570b9c2a4351b19df2b5451e79bd",
   closing: "https://www.notion.so/305fa1bec3b94f8483b1adc0688c27c2",
 };
-
 let currentMode = null;
 let staff = "";
 let checks = {};
@@ -222,7 +247,91 @@ let staffs = [];
 let checkItems = { opening: [], closing: [] };
 let notionRecords = [];
 let summaryOpen = { opening: false, closing: false };
-
+// ============================================================
+//  GAS URL 設定
+// ============================================================
+function getGasUrl() {
+  try {
+    const saved = localStorage.getItem(GAS_URL_STORAGE_KEY);
+    if (saved && saved.trim()) return saved.trim();
+  } catch (e) {}
+  return DEFAULT_GAS_URL;
+}
+function isLikelyGasUrl(url) {
+  return /^https:\/\/script\.google\.com\/macros\/s\/.+\/exec$/.test(url);
+}
+function openSettings() {
+  const current = getGasUrl();
+  document.getElementById("settings-url-input").value = current;
+  document.getElementById("settings-err").style.display = "none";
+  document.getElementById("settings-status-dot").className = "status-dot";
+  document.getElementById("settings-status-text").textContent = current ? "未確認（保存済みURLあり）" : "未設定";
+  showScr("settings");
+}
+function saveGasUrl() {
+  const inp = document.getElementById("settings-url-input");
+  const url = inp.value.trim();
+  const err = document.getElementById("settings-err");
+  if (!url) {
+    localStorage.removeItem(GAS_URL_STORAGE_KEY);
+    err.style.display = "none";
+    refreshHomeUrlWarning();
+    alert("URLをクリアしました");
+    return;
+  }
+  if (!isLikelyGasUrl(url)) {
+    err.textContent = "URLの形式が正しくないようです（https://script.google.com/macros/s/.../exec の形式を確認してください）。それでも保存しますか？";
+    err.style.display = "block";
+  }
+  localStorage.setItem(GAS_URL_STORAGE_KEY, url);
+  refreshHomeUrlWarning();
+  alert("保存しました");
+  // 保存後にデータを再読込
+  checkItems = { opening: [], closing: [] };
+  loadCheckItems("opening");
+  loadCheckItems("closing");
+  loadTodayRecords();
+}
+function clearGasUrl() {
+  if (!confirm("保存済みのGAS URLを削除しますか？")) return;
+  localStorage.removeItem(GAS_URL_STORAGE_KEY);
+  document.getElementById("settings-url-input").value = "";
+  refreshHomeUrlWarning();
+}
+async function testGasUrl() {
+  const url = document.getElementById("settings-url-input").value.trim();
+  const dot = document.getElementById("settings-status-dot");
+  const text = document.getElementById("settings-status-text");
+  if (!url) {
+    dot.className = "status-dot bad";
+    text.textContent = "URLが未入力です";
+    return;
+  }
+  dot.className = "status-dot";
+  text.textContent = "接続中...";
+  try {
+    const res = await fetch(url, {
+      method: "POST",
+      headers: { "Content-Type": "text/plain" },
+      body: JSON.stringify({ action: "getCheckItems", mode: "opening" })
+    });
+    const data = await res.json();
+    if (data && data.ok) {
+      dot.className = "status-dot ok";
+      text.textContent = "接続に成功しました";
+    } else {
+      dot.className = "status-dot bad";
+      text.textContent = "接続できましたが応答が異常です: " + (data && data.error ? data.error : "unknown");
+    }
+  } catch (e) {
+    dot.className = "status-dot bad";
+    text.textContent = "接続に失敗しました: " + e.message;
+  }
+}
+function refreshHomeUrlWarning() {
+  const warn = document.getElementById("home-no-url-warning");
+  warn.style.display = getGasUrl() ? "none" : "block";
+}
 // ============================================================
 //  画面制御・日付表示
 // ============================================================
@@ -230,12 +339,11 @@ function showScr(id) {
   document.querySelectorAll(".scr").forEach(s => s.classList.remove("on"));
   document.getElementById(id).classList.add("on");
 }
-
 function toggleSummary(mode) {
   summaryOpen[mode] = !summaryOpen[mode];
   const body = document.getElementById(mode + "-body");
   const chevron = document.getElementById(mode + "-chevron");
-  
+
   if (summaryOpen[mode]) {
     body.classList.add("open");
     chevron.classList.add("open");
@@ -244,14 +352,12 @@ function toggleSummary(mode) {
     chevron.classList.remove("open");
   }
 }
-
 function renderDate() {
   const now = new Date();
   const days = ["日", "月", "火", "水", "木", "金", "土"];
   const dateStr = `${now.getFullYear()}年${now.getMonth() + 1}月${now.getDate()}日（${days[now.getDay()]}）`;
   document.getElementById("home-date").textContent = dateStr;
 }
-
 // ============================================================
 //  スタッフ管理
 // ============================================================
@@ -262,11 +368,9 @@ function loadStaffs() {
   } catch (e) { staffs = []; }
   renderStaffList();
 }
-
 function saveStaffs() {
   localStorage.setItem(STORAGE_KEY, JSON.stringify(staffs));
 }
-
 function addStaff() {
   const inp = document.getElementById("staff-add-input");
   const name = inp.value.trim();
@@ -277,13 +381,11 @@ function addStaff() {
   inp.value = "";
   renderStaffList();
 }
-
 function delStaff(name) {
   staffs = staffs.filter(s => s !== name);
   saveStaffs();
   renderStaffList();
 }
-
 function renderStaffList() {
   const html = staffs.map(s => `
     <div class="staff-item">
@@ -293,13 +395,14 @@ function renderStaffList() {
   `).join("");
   document.getElementById("staff-list").innerHTML = html || "<div style='color: #999; font-size: 12px;'>登録済みスタッフなし</div>";
 }
-
 // ============================================================
 //  チェック項目・記録取得
 // ============================================================
 async function loadCheckItems(mode) {
+  const url = getGasUrl();
+  if (!url) { refreshHomeUrlWarning(); return; }
   try {
-    const res = await fetch(GAS_URL, {
+    const res = await fetch(url, {
       method: "POST",
       headers: { "Content-Type": "text/plain" },
       body: JSON.stringify({ action: "getCheckItems", mode: mode })
@@ -311,10 +414,11 @@ async function loadCheckItems(mode) {
     }
   } catch (err) { console.log("Load items error:", err); }
 }
-
 async function loadTodayRecords() {
+  const url = getGasUrl();
+  if (!url) { refreshHomeUrlWarning(); return; }
   try {
-    const res = await fetch(GAS_URL, {
+    const res = await fetch(url, {
       method: "POST",
       headers: { "Content-Type": "text/plain" },
       body: JSON.stringify({ action: "fetchTodayRecords" })
@@ -326,7 +430,6 @@ async function loadTodayRecords() {
     }
   } catch (err) { console.log("Load error:", err); }
 }
-
 // ============================================================
 //  サマリー表示
 // ============================================================
@@ -334,34 +437,36 @@ function updateSummary() {
   renderModeSummary("opening");
   renderModeSummary("closing");
 }
-
 function renderModeSummary(mode) {
   const badge = document.getElementById(mode + "-badge");
   const body = document.getElementById(mode + "-body");
+  if (!getGasUrl()) {
+    badge.textContent = "URL未設定";
+    badge.className = "summary-badge empty";
+    body.innerHTML = "<div style='padding: 12px; color: #999;'>⚙️ 設定からGASのURLを登録してください。</div>";
+    return;
+  }
   const records = notionRecords.filter(r => r.mode === mode);
   const items = checkItems[mode] || [];
-
   if (items.length === 0) {
     badge.textContent = "項目取得中";
     badge.className = "summary-badge empty";
     body.innerHTML = "<div style='padding: 12px; color: #999;'>項目を読み込み中...</div>";
     return;
   }
-
   if (records.length === 0) {
     badge.textContent = "記録なし";
     badge.className = "summary-badge empty";
     body.innerHTML = renderEmptyBody(mode);
     return;
   }
-
   // ★修正部分：正しい達成率計算
   const totalItems = items.length; // 母数はチェック項目数に固定
-  
+
   // 項目別完了状況を一度だけ計算（効率化）
   const itemStatusMap = {};
   let totalCompleted = 0;
-  
+
   items.forEach(item => {
     const completedByAnyone = records.some(r => r.checks?.items?.[item.label]);
     itemStatusMap[item.label] = completedByAnyone;
@@ -369,18 +474,13 @@ function renderModeSummary(mode) {
       totalCompleted++;
     }
   });
-
   const rate = totalItems > 0 ? Math.round((totalCompleted / totalItems) * 100) : 0;
-
   // バッジ更新
   badge.textContent = `${records.length}件 / ${rate}%`;
   badge.className = `summary-badge ${rate >= 80 ? 'good' : 'warn'}`;
-
   // ボディ更新（itemStatusMapを渡して重複計算を回避）
   body.innerHTML = renderSummaryBody(mode, records, items, rate, totalCompleted, totalItems, itemStatusMap);
 }
-
-
 function renderEmptyBody(mode) {
   const dbUrl = NOTION_DB_URL[mode];
   return `
@@ -392,30 +492,24 @@ function renderEmptyBody(mode) {
     </div>
   `;
 }
-
 function renderSummaryBody(mode, records, items, rate, totalCompleted, totalItems) {
   const dbUrl = NOTION_DB_URL[mode];
-
   // プログレスバー色分け
   const progressClass = rate >= 80 ? 'good' : rate >= 60 ? 'warn' : 'poor';
-
   // スタッフ一覧
   const staffList = [...new Set(records.map(r => r.staff))].join(", ");
-
   // 項目別完了状況
   const itemStatusMap = {};
   items.forEach(item => {
     const completedByAnyone = records.some(r => r.checks?.items?.[item.label]);
     itemStatusMap[item.label] = completedByAnyone;
   });
-
   const itemBadges = items.map(item => {
     const isCompleted = itemStatusMap[item.label];
     return `<span class="item-badge ${isCompleted ? 'done' : 'undone'}">
       ${isCompleted ? '✅' : '❌'} ${item.label}
     </span>`;
   }).join("");
-
   return `
     <div class="summary-progress">
       <div class="summary-progress-label">
@@ -426,16 +520,13 @@ function renderSummaryBody(mode, records, items, rate, totalCompleted, totalItem
         <div class="progress-enhanced-bar ${progressClass}" style="width: ${rate}%;"></div>
       </div>
     </div>
-
     <div class="summary-items">
       <div class="summary-items-title">項目別状況</div>
       <div class="item-grid">${itemBadges}</div>
     </div>
-
     <div class="summary-staff">
       👥 担当者: ${staffList} (${records.length}件)
     </div>
-
     <div class="summary-links">
       <a href="${dbUrl}" target="_blank" class="notion-link">
         <span>🔗</span> Notionで開く
@@ -443,11 +534,15 @@ function renderSummaryBody(mode, records, items, rate, totalCompleted, totalItem
     </div>
   `;
 }
-
 // ============================================================
 //  チェック処理（既存機能）
 // ============================================================
 function startMode(m) {
+  if (!getGasUrl()) {
+    alert("先に「⚙️ 設定」からGASのデプロイURLを登録してください。");
+    openSettings();
+    return;
+  }
   currentMode = m;
   checks = {};
   staff = "";
@@ -457,23 +552,19 @@ function startMode(m) {
   document.getElementById("staff-warn").style.display = "none";
   showScr("staff");
 }
-
 function toCheck() {
   const inp = document.getElementById("staff-input");
   const name = inp.value.trim();
   if (!name) { document.getElementById("staff-err").style.display = "block"; return; }
-
   const alreadyChecked = notionRecords.find(r => r.staff === name && r.mode === currentMode);
   if (alreadyChecked) {
-    document.getElementById("staff-warn").innerHTML = 
+    document.getElementById("staff-warn").innerHTML =
       `⚠️ <strong>${name}</strong>さんは既に${currentMode === "opening" ? "開店前" : "締め作業"}をチェック済みです。本当に記入しますか？`;
     document.getElementById("staff-warn").style.display = "block";
   }
-
   staff = name;
   document.getElementById("check-staff").textContent = staff;
   document.getElementById("check-mode").textContent = (currentMode === "opening" ? "開店前" : "締め作業");
-
   const items = checkItems[currentMode] || [];
   const html = items.map(item => {
     const alreadyDone = notionRecords.find(r => r.mode === currentMode && r.checks?.items?.[item.label]);
@@ -491,14 +582,13 @@ function toCheck() {
   updateProgress();
   showScr("check");
 }
-
 function updateProgress() {
   const items = checkItems[currentMode] || [];
   const checked = Array.from(document.querySelectorAll("#check-items input:checked")).length;
   const total = items.length;
   document.getElementById("progress-bar").style.width = (total > 0 ? checked / total * 100 : 0) + "%";
   document.getElementById("check-count").textContent = checked + "/" + total;
-  
+
   checks = {};
   document.querySelectorAll("#check-items input").forEach(el => {
     if (el.checked) {
@@ -507,34 +597,38 @@ function updateProgress() {
     }
   });
 }
-
 function toConfirm() {
   const items = checkItems[currentMode] || [];
   const checked = Object.keys(checks).length;
   const total = items.length;
   const rate = total > 0 ? Math.round(checked / total * 100) : 0;
-  
+
   document.getElementById("confirm-staff").textContent = staff;
   document.getElementById("confirm-mode").textContent = (currentMode === "opening" ? "🌅 開店前" : "🌙 締め作業");
   document.getElementById("confirm-rate").textContent = checked + "/" + total + " (" + rate + "%)";
   showScr("confirm");
 }
-
 async function send() {
+  const url = getGasUrl();
+  if (!url) {
+    alert("GASのデプロイURLが設定されていません。「⚙️ 設定」から登録してください。");
+    openSettings();
+    return;
+  }
   document.getElementById("send-btn").disabled = true;
   document.getElementById("send-btn").textContent = "送信中...";
-  
+
   const today = new Date().toISOString().split("T")[0];
   const payload = { mode: currentMode, date: today, staff: staff, status: "✅ 完了", checks: checks };
-  
+
   try {
-    const res = await fetch(GAS_URL, {
+    const res = await fetch(url, {
       method: "POST",
       headers: { "Content-Type": "text/plain" },
       body: JSON.stringify(payload)
     });
     const data = await res.json();
-    
+
     if (data.ok) {
       showScr("done");
       await loadTodayRecords(); // 送信後にサマリー更新
@@ -544,22 +638,21 @@ async function send() {
   } catch (err) {
     alert("送信失敗: " + err.message);
   }
-  
+
   document.getElementById("send-btn").disabled = false;
   document.getElementById("send-btn").textContent = "Notionに記録";
 }
-
 function goHome() {
   showScr("home");
   loadTodayRecords();
 }
-
 // ============================================================
 //  初期化
 // ============================================================
 document.addEventListener("DOMContentLoaded", () => {
   renderDate();
   loadStaffs();
+  refreshHomeUrlWarning();
   loadCheckItems("opening");
   loadCheckItems("closing");
   loadTodayRecords();
