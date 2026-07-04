@@ -18,6 +18,7 @@ body { font-family: -apple-system, BlinkMacSystemFont, 'Hiragino Sans', sans-ser
 .btn { padding: 12px 16px; border: none; border-radius: 8px; cursor: pointer; font-size: 14px; font-weight: 500; width: 100%; }
 .btn-primary { background: #0F6E56; color: #fff; }
 .btn-secondary { background: #534AB7; color: #fff; }
+.btn-inventory { background: #B45309; color: #fff; }
 .btn-text { background: none; color: #0066cc; border: none; padding: 8px; font-size: 12px; }
 .btn-del { background: #fee; color: #c33; border: none; padding: 6px 10px; border-radius: 6px; cursor: pointer; font-size: 11px; }
 .btn:disabled { background: #ddd; color: #999; cursor: not-allowed; }
@@ -40,7 +41,7 @@ body { font-family: -apple-system, BlinkMacSystemFont, 'Hiragino Sans', sans-ser
 .status-dot { width: 8px; height: 8px; border-radius: 50%; background: #999; }
 .status-dot.ok { background: #0F6E56; }
 .status-dot.bad { background: #c33; }
-/* サマリーカード専用スタイル */
+/* ── サマリーカード専用スタイル ── */
 .summary-card { background: #fff; border: 1px solid #e0e0e0; border-radius: 8px; margin-bottom: 8px; overflow: hidden; }
 .summary-header { padding: 10px 12px; cursor: pointer; user-select: none; display: flex; justify-content: space-between; align-items: center; }
 .summary-header:hover { background: #f8f9fa; }
@@ -71,6 +72,31 @@ body { font-family: -apple-system, BlinkMacSystemFont, 'Hiragino Sans', sans-ser
 .summary-links { padding: 8px 12px; display: flex; gap: 8px; }
 .notion-link { display: inline-flex; align-items: center; gap: 4px; padding: 4px 8px; background: #f5f5f5; border: 1px solid #e0e0e0; border-radius: 4px; text-decoration: none; font-size: 11px; color: #555; }
 .notion-link:hover { background: #ebebeb; }
+/* ── 棚卸（インベントリ）専用スタイル ── */
+.loc-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px; }
+.loc-card { background: #fff; border: 1.5px solid #e0e0e0; border-radius: 10px; padding: 14px 12px; cursor: pointer; transition: border-color .12s; text-align: center; }
+.loc-card:hover { border-color: #B45309; }
+.loc-card.inv-loc-done { border-color: #0F6E56; background: #f3faf7; }
+.loc-icon { font-size: 26px; margin-bottom: 4px; }
+.loc-name { font-weight: 600; font-size: 13px; margin-bottom: 4px; }
+.loc-count { font-size: 11px; color: #999; margin-bottom: 6px; }
+.loc-badge { display: inline-block; font-size: 10px; padding: 2px 8px; border-radius: 10px; font-weight: 500; }
+.loc-badge.done { background: #e8f5e9; color: #0F6E56; }
+.loc-badge.todo { background: #f5f5f5; color: #999; }
+.loc-staff { font-size: 10px; color: #666; margin-top: 4px; }
+.inv-search { margin-bottom: 10px; }
+.inv-item-row { display: flex; align-items: center; gap: 10px; padding: 10px 0; border-bottom: 1px solid #f0f0f0; }
+.inv-item-row:last-child { border-bottom: none; }
+.inv-item-main { flex: 1; min-width: 0; }
+.inv-item-name { font-size: 13px; font-weight: 500; }
+.inv-item-sub { font-size: 11px; color: #999; margin-top: 2px; }
+.inv-item-input { display: flex; align-items: center; gap: 6px; flex-shrink: 0; }
+.inv-unit { font-size: 12px; color: #666; min-width: 24px; }
+.cat-header { padding: 8px 0 4px; font-size: 11px; font-weight: 700; color: #999; text-transform: uppercase; letter-spacing: .04em; }
+.empty { text-align: center; padding: 30px 16px; color: #999; font-size: 13px; }
+.loading-block { text-align: center; padding: 30px 16px; color: #999; }
+.spinner { width: 24px; height: 24px; border: 3px solid #e0e0e0; border-top-color: #B45309; border-radius: 50%; animation: spin .7s linear infinite; margin: 0 auto 10px; }
+@keyframes spin { to { transform: rotate(360deg); } }
 </style>
 </head>
 <body>
@@ -117,8 +143,23 @@ body { font-family: -apple-system, BlinkMacSystemFont, 'Hiragino Sans', sans-ser
         <div style="padding: 12px; color: #999; font-size: 13px;">読み込み中...</div>
       </div>
     </div>
+    <!-- 棚卸サマリー -->
+    <div class="summary-card">
+      <div class="summary-header" onclick="toggleSummary('inv')">
+        <div class="summary-header-left">
+          <span>📦</span>
+          <span class="summary-title">棚卸（在庫確認）</span>
+          <span class="summary-badge empty" id="inv-badge">読込中</span>
+        </div>
+        <span class="summary-chevron" id="inv-chevron">▼</span>
+      </div>
+      <div class="summary-body" id="inv-body">
+        <div style="padding: 12px; color: #999; font-size: 13px;">読み込み中...</div>
+      </div>
+    </div>
     <button class="btn btn-primary" onclick="startMode('opening')" style="margin-bottom: 8px;">🌅 開店前チェック</button>
     <button class="btn btn-secondary" onclick="startMode('closing')" style="margin-bottom: 8px;">🌙 締め作業チェック</button>
+    <button class="btn btn-inventory" onclick="startInventoryFlow()" style="margin-bottom: 8px;">📦 棚卸（在庫確認）</button>
     <button class="btn-text" onclick="showScr('staff-mgr')" style="width: 100%; text-align: center;">👥 スタッフ管理</button>
   </div>
 </div>
@@ -165,7 +206,7 @@ body { font-family: -apple-system, BlinkMacSystemFont, 'Hiragino Sans', sans-ser
 <!-- STAFF SELECT -->
 <div id="staff" class="scr">
   <div class="hdr">
-    <button class="hdr-back" onclick="showScr('home')">←</button>
+    <button class="hdr-back" onclick="backFromStaff()">←</button>
     <h1 class="hdr-title" id="staff-title">記入者選択</h1>
   </div>
   <div class="content">
@@ -221,12 +262,72 @@ body { font-family: -apple-system, BlinkMacSystemFont, 'Hiragino Sans', sans-ser
     <button class="btn btn-primary" id="send-btn" onclick="send()">Notionに記録</button>
   </div>
 </div>
+<!-- INVENTORY: LOCATION PICKER -->
+<div id="inv-location" class="scr">
+  <div class="hdr">
+    <button class="hdr-back" onclick="showScr('home')">←</button>
+    <h1 class="hdr-title">📦 棚卸：場所を選択</h1>
+    <button class="hdr-icon" onclick="loadInventoryStatus()" title="更新">🔄</button>
+  </div>
+  <div class="content">
+    <div class="info-box">複数人で同時に別々の場所を担当できます。担当する保管場所を選んでください。</div>
+    <div class="loc-grid" id="inv-location-grid"></div>
+    <div id="inv-finalize-bar" style="margin-top: 14px;"></div>
+  </div>
+</div>
+<!-- INVENTORY: ITEM ENTRY -->
+<div id="inv-check" class="scr">
+  <div class="hdr">
+    <button class="hdr-back" onclick="showScr('inv-location')">←</button>
+    <h1 class="hdr-title" id="inv-check-title">棚卸入力</h1>
+  </div>
+  <div class="content">
+    <div style="margin-bottom: 12px;">
+      <span id="inv-check-staff" style="font-weight: 500;"></span> が入力中
+    </div>
+    <input type="text" id="inv-search-box" class="input inv-search" placeholder="🔍 品目名で検索..." oninput="onInvSearch()">
+    <div class="progress"><div class="progress-bar" id="inv-progress-bar"></div></div>
+    <div style="font-size: 12px; color: #666; margin-bottom: 8px;">入力済み: <span id="inv-count"></span></div>
+    <div id="inv-items"></div>
+  </div>
+  <div style="padding: 12px; border-top: 1px solid #e0e0e0;">
+    <button class="btn btn-inventory" onclick="toInvConfirm()">確認へ</button>
+  </div>
+</div>
+<!-- INVENTORY: CONFIRM -->
+<div id="inv-confirm" class="scr">
+  <div class="hdr">
+    <button class="hdr-back" onclick="showScr('inv-check')">←</button>
+    <h1 class="hdr-title">棚卸の確認</h1>
+  </div>
+  <div class="content">
+    <div class="card">
+      <div style="font-size: 12px; color: #666; margin-bottom: 4px;">場所</div>
+      <div style="font-weight: 500;" id="inv-confirm-loc"></div>
+    </div>
+    <div class="card">
+      <div style="font-size: 12px; color: #666; margin-bottom: 4px;">担当者</div>
+      <div style="font-weight: 500;" id="inv-confirm-staff"></div>
+    </div>
+    <div class="card">
+      <div style="font-size: 12px; color: #666; margin-bottom: 4px;">入力件数</div>
+      <div style="font-weight: 500;" id="inv-confirm-count"></div>
+    </div>
+    <div class="card">
+      <div style="font-size: 12px; color: #666; margin-bottom: 6px;">内容プレビュー</div>
+      <div style="font-size: 13px; line-height: 1.7;" id="inv-confirm-preview"></div>
+    </div>
+  </div>
+  <div style="padding: 12px; border-top: 1px solid #e0e0e0;">
+    <button class="btn btn-inventory" id="inv-send-btn" onclick="sendInventory()">Notionに記録</button>
+  </div>
+</div>
 <!-- DONE -->
 <div id="done" class="scr">
   <div class="content" style="display: flex; flex-direction: column; justify-content: center; align-items: center;">
     <div style="font-size: 48px; margin-bottom: 12px;">✅</div>
-    <h2 style="font-size: 18px; margin-bottom: 8px;">記録しました</h2>
-    <p style="color: #666; font-size: 14px; margin-bottom: 20px;">Notionに送信されました</p>
+    <h2 style="font-size: 18px; margin-bottom: 8px;" id="done-title">記録しました</h2>
+    <p style="color: #666; font-size: 14px; margin-bottom: 20px;" id="done-sub">Notionに送信されました</p>
     <button class="btn btn-primary" onclick="goHome()" style="max-width: 200px;">ホームに戻る</button>
   </div>
 </div>
@@ -240,13 +341,30 @@ const NOTION_DB_URL = {
   opening: "https://www.notion.so/73ff570b9c2a4351b19df2b5451e79bd",
   closing: "https://www.notion.so/305fa1bec3b94f8483b1adc0688c27c2",
 };
+// 棚卸：保管場所の一覧（Notion「飲食部門備品在庫マスタ」の保管場所プロパティと一致させること）
+const INV_LOCATIONS = [
+  { key: "厨房冷蔵庫",             icon: "🧊" },
+  { key: "厨房冷凍庫",             icon: "❄️" },
+  { key: "チェストストッカー",       icon: "🧺" },
+  { key: "厨房コールドテーブル",     icon: "🧊" },
+  { key: "カウンターコールドテーブル", icon: "🧊" },
+  { key: "厨房",                  icon: "🍳" },
+  { key: "倉庫",                  icon: "🏬" },
+  { key: "カウンター",             icon: "🛎️" },
+];
 let currentMode = null;
 let staff = "";
 let checks = {};
 let staffs = [];
 let checkItems = { opening: [], closing: [] };
 let notionRecords = [];
-let summaryOpen = { opening: false, closing: false };
+let summaryOpen = { opening: false, closing: false, inv: false };
+// 棚卸まわりの状態
+let currentLocation = null;
+let invStatus = { date: "", locations: [] };
+let invItems = [];
+let invCounts = {};
+let invSearchQuery = "";
 // ============================================================
 //  GAS URL 設定
 // ============================================================
@@ -291,6 +409,7 @@ function saveGasUrl() {
   loadCheckItems("opening");
   loadCheckItems("closing");
   loadTodayRecords();
+  loadInventoryStatus();
 }
 function clearGasUrl() {
   if (!confirm("保存済みのGAS URLを削除しますか？")) return;
@@ -333,11 +452,18 @@ function refreshHomeUrlWarning() {
   warn.style.display = getGasUrl() ? "none" : "block";
 }
 // ============================================================
+//  共通ヘルパー
+// ============================================================
+const esc = s => String(s == null ? "" : s).replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/"/g,"&quot;");
+// ============================================================
 //  画面制御・日付表示
 // ============================================================
 function showScr(id) {
   document.querySelectorAll(".scr").forEach(s => s.classList.remove("on"));
   document.getElementById(id).classList.add("on");
+}
+function backFromStaff() {
+  if (currentMode === "inventory") { showScr("inv-location"); } else { showScr("home"); }
 }
 function toggleSummary(mode) {
   summaryOpen[mode] = !summaryOpen[mode];
@@ -460,7 +586,7 @@ function renderModeSummary(mode) {
     body.innerHTML = renderEmptyBody(mode);
     return;
   }
-  // ★修正部分：正しい達成率計算
+  // ★正しい達成率計算
   const totalItems = items.length; // 母数はチェック項目数に固定
 
   // 項目別完了状況を一度だけ計算（効率化）
@@ -535,7 +661,307 @@ function renderSummaryBody(mode, records, items, rate, totalCompleted, totalItem
   `;
 }
 // ============================================================
-//  チェック処理（既存機能）
+//  棚卸（複数場所・同時並行）
+// ============================================================
+async function loadInventoryStatus() {
+  const url = getGasUrl();
+  if (!url) { refreshHomeUrlWarning(); return; }
+  try {
+    const res = await fetch(url, {
+      method: "POST",
+      headers: { "Content-Type": "text/plain" },
+      body: JSON.stringify({ action: "getInventoryStatus" })
+    });
+    const data = await res.json();
+    if (data.ok) {
+      invStatus = data;
+      renderInventorySummary();
+      const locScr = document.getElementById("inv-location");
+      if (locScr && locScr.classList.contains("on")) {
+        renderLocationGrid();
+        renderFinalizeBar();
+      }
+    }
+  } catch (err) { console.log("Load inventory status error:", err); }
+}
+function renderInventorySummary() {
+  const badge = document.getElementById("inv-badge");
+  const body = document.getElementById("inv-body");
+  if (!badge) return;
+  if (!getGasUrl()) {
+    badge.textContent = "URL未設定";
+    badge.className = "summary-badge empty";
+    body.innerHTML = "<div style='padding: 12px; color: #999;'>⚙️ 設定からGASのURLを登録してください。</div>";
+    return;
+  }
+  const locs = invStatus.locations || [];
+  if (!locs.length) {
+    badge.textContent = "読込中";
+    badge.className = "summary-badge empty";
+    body.innerHTML = "<div style='padding: 12px; color: #999;'>場所ごとの状況を読み込み中...</div>";
+    return;
+  }
+  const doneCount = locs.filter(l => l.done).length;
+  const rate = Math.round(doneCount / locs.length * 100);
+  badge.textContent = `${doneCount}/${locs.length}箇所完了`;
+  badge.className = `summary-badge ${rate >= 100 ? 'good' : rate > 0 ? 'warn' : 'empty'}`;
+  const rows = locs.map(l => {
+    const cfg = INV_LOCATIONS.find(x => x.key === l.key) || {};
+    return `<span class="item-badge ${l.done ? 'done' : 'undone'}">
+      ${l.done ? '✅' : '⏳'} ${cfg.icon || '📦'} ${esc(l.key)}${l.done && l.staff ? ' (' + esc(l.staff) + ')' : ''}
+    </span>`;
+  }).join("");
+  const finalizedLine = invStatus.finalized
+    ? `<div class="success-box" style="margin: 0 12px 8px;">✅ この日の新規棚卸（確定・集計レコード）は作成済みです</div>`
+    : `<div style="padding: 0 12px 8px; font-size: 11px; color: #999;">まだ新規棚卸（確定）は行われていません（ログはこのまま蓄積されます）</div>`;
+  body.innerHTML = `
+    <div class="summary-items">
+      <div class="summary-items-title">場所別状況（${esc(invStatus.date || '')}）— 複数人が同時に別の場所を担当できます</div>
+      <div class="item-grid">${rows}</div>
+    </div>
+    ${finalizedLine}
+    <div class="summary-links">
+      <a href="#" class="notion-link" onclick="startInventoryFlow();return false;"><span>📦</span> 棚卸を開始/続ける</a>
+    </div>
+  `;
+}
+function startInventoryFlow() {
+  if (!getGasUrl()) {
+    alert("先に「⚙️ 設定」からGASのデプロイURLを登録してください。");
+    openSettings();
+    return;
+  }
+  renderLocationGrid();
+  renderFinalizeBar();
+  showScr("inv-location");
+  loadInventoryStatus();
+}
+function renderFinalizeBar() {
+  const root = document.getElementById("inv-finalize-bar");
+  if (!root) return;
+  const locs = invStatus.locations || [];
+  const doneCount = locs.filter(l => l.done).length;
+  const total = locs.length || INV_LOCATIONS.length;
+  const allDone = total > 0 && doneCount === total;
+
+  if (invStatus.finalized) {
+    root.innerHTML = `
+      <div class="success-box">
+        ✅ この日の新規棚卸（確定・集計レコード）は作成済みです。<br>
+        ログ（棚卸記録DB）はこのまま別に残っています。
+      </div>
+      <button class="btn" style="background:#fff;border:1px solid #e0e0e0;color:#666;" onclick="finalizeInventory(true)">
+        もう一度、今の内容で確定し直す（棚卸確定記録DBに追加作成）
+      </button>`;
+    return;
+  }
+
+  if (allDone) {
+    root.innerHTML = `
+      <div class="success-box">✅ 全${total}箇所の棚卸ログが揃いました。新規棚卸として確定できます。</div>
+      <button class="btn btn-primary" onclick="finalizeInventory(false)">✅ 本日の棚卸を確定する（新規棚卸）</button>`;
+  } else {
+    root.innerHTML = `
+      <div class="info-box">あと ${total - doneCount} 箇所の入力が済むと確定できます（${doneCount}/${total}箇所完了）。</div>
+      <button class="btn" style="background:#f5f5f5;color:#999;" onclick="finalizeInventory(false)">今の内容で確定する（未完了の場所は含まれません）</button>`;
+  }
+}
+async function finalizeInventory(force) {
+  const url = getGasUrl();
+  if (!url) { alert("GASのデプロイURLが設定されていません。「⚙️ 設定」から登録してください。"); openSettings(); return; }
+  const locs = invStatus.locations || [];
+  const doneCount = locs.filter(l => l.done).length;
+  if (!force && locs.length && doneCount < locs.length) {
+    const okToProceed = confirm(`まだ${locs.length - doneCount}箇所が未実施です。今の内容だけで新規棚卸を確定しますか？`);
+    if (!okToProceed) return;
+  }
+  try {
+    const today = new Date().toISOString().split("T")[0];
+    const res = await fetch(url, {
+      method: "POST",
+      headers: { "Content-Type": "text/plain" },
+      body: JSON.stringify({ action: "finalizeInventory", date: today, force: !!force })
+    });
+    const data = await res.json();
+    if (!data.ok) { alert("エラー: " + (data.error || "不明なエラー")); return; }
+    if (data.alreadyFinalized) {
+      alert("本日分は既に確定済みです。作り直す場合は「もう一度確定し直す」を選んでください。");
+    } else {
+      alert(`✅ 新規棚卸を確定しました（${data.itemCount || data.saved || 0}品目）`);
+    }
+    loadInventoryStatus();
+  } catch (e) {
+    alert("確定処理に失敗しました: " + e.message);
+  }
+}
+function renderLocationGrid() {
+  const root = document.getElementById("inv-location-grid");
+  const locs = invStatus.locations || [];
+  root.innerHTML = INV_LOCATIONS.map(loc => {
+    const st = locs.find(l => l.key === loc.key) || {};
+    const doneCls = st.done ? "inv-loc-done" : "";
+    const badge = st.done ? `<span class="loc-badge done">✅ 完了</span>` : `<span class="loc-badge todo">⏳ 未実施</span>`;
+    const cnt = st.itemCount != null ? `${st.itemCount}品目` : "";
+    const staffLine = st.done && st.staff ? `<div class="loc-staff">担当: ${esc(st.staff)}</div>` : "";
+    return `
+      <div class="loc-card ${doneCls}" onclick="chooseLocation('${esc(loc.key)}')">
+        <div class="loc-icon">${loc.icon}</div>
+        <div class="loc-name">${esc(loc.key)}</div>
+        <div class="loc-count">${cnt}</div>
+        ${badge}
+        ${staffLine}
+      </div>`;
+  }).join("");
+}
+function chooseLocation(locKey) {
+  currentMode = "inventory";
+  currentLocation = locKey;
+  checks = {};
+  staff = "";
+  document.getElementById("staff-title").textContent = "📦 棚卸: " + locKey;
+  document.getElementById("staff-input").value = "";
+  document.getElementById("staff-err").style.display = "none";
+  const warn = document.getElementById("staff-warn");
+  const st = (invStatus.locations || []).find(l => l.key === locKey);
+  if (st && st.done) {
+    warn.innerHTML = `⚠️ 「${esc(locKey)}」は本日 <strong>${esc(st.staff || '')}</strong> さんが既に実施済みです。再度実施すると内容が追加されます。よろしいですか？`;
+    warn.style.display = "block";
+  } else {
+    warn.style.display = "none";
+  }
+  showScr("staff");
+}
+async function toInvCheck() {
+  currentMode = "inventory";
+  invCounts = {};
+  invSearchQuery = "";
+  document.getElementById("inv-search-box").value = "";
+  document.getElementById("inv-check-title").textContent = "📦 " + currentLocation;
+  document.getElementById("inv-check-staff").textContent = staff;
+  document.getElementById("inv-items").innerHTML = '<div class="loading-block"><div class="spinner"></div><div>品目を読み込み中...</div></div>';
+  showScr("inv-check");
+  const url = getGasUrl();
+  try {
+    const res = await fetch(url, {
+      method: "POST",
+      headers: { "Content-Type": "text/plain" },
+      body: JSON.stringify({ action: "getInventoryItems", location: currentLocation })
+    });
+    const data = await res.json();
+    if (data.ok) {
+      invItems = data.items || [];
+      renderInvItems();
+    } else {
+      document.getElementById("inv-items").innerHTML = `<div class="empty">⚠️ 読み込みに失敗しました: ${esc(data.error || '')}</div>`;
+    }
+  } catch (e) {
+    document.getElementById("inv-items").innerHTML = `<div class="empty">⚠️ 読み込みに失敗しました: ${esc(e.message)}</div>`;
+  }
+}
+function onInvSearch() {
+  invSearchQuery = document.getElementById("inv-search-box").value;
+  renderInvItems();
+}
+function renderInvItems() {
+  const root = document.getElementById("inv-items");
+  let list = invItems;
+  if (invSearchQuery) {
+    const q = invSearchQuery.toLowerCase();
+    list = list.filter(i => (i.name || "").toLowerCase().includes(q));
+  }
+  if (!list.length) {
+    root.innerHTML = '<div class="empty">🔍 該当する品目がありません</div>';
+    updateInvProgress();
+    return;
+  }
+  const byCat = {};
+  for (const it of list) { const c = it.category || "その他"; (byCat[c] = byCat[c] || []).push(it); }
+  let html = "";
+  for (const [cat, catItems] of Object.entries(byCat)) {
+    html += `<div class="cat-header">${esc(cat)}</div>`;
+    html += catItems.map(it => `
+      <div class="inv-item-row">
+        <div class="inv-item-main">
+          <div class="inv-item-name">${esc(it.name)}</div>
+          <div class="inv-item-sub">理論値: ${it.theoreticalStock != null ? it.theoreticalStock : "—"} ${esc(it.unit || "")}</div>
+        </div>
+        <div class="inv-item-input">
+          <input type="number" inputmode="decimal" step="any" class="input" style="margin-bottom:0;width:90px;text-align:right"
+                 id="qty-${esc(it.id)}" placeholder="0" value="${invCounts[it.id] != null ? invCounts[it.id] : ''}"
+                 oninput="onInvQtyInput('${esc(it.id)}', this.value)">
+          <span class="inv-unit">${esc(it.unit || "")}</span>
+        </div>
+      </div>`).join("");
+  }
+  root.innerHTML = html;
+  updateInvProgress();
+}
+function onInvQtyInput(id, val) {
+  if (val === "" || val === null) { delete invCounts[id]; }
+  else { const n = parseFloat(val); if (!isNaN(n)) invCounts[id] = n; else delete invCounts[id]; }
+  updateInvProgress();
+}
+function updateInvProgress() {
+  const total = invItems.length;
+  const entered = Object.keys(invCounts).length;
+  document.getElementById("inv-progress-bar").style.width = (total ? entered / total * 100 : 0) + "%";
+  document.getElementById("inv-count").textContent = entered + "/" + total;
+}
+function toInvConfirm() {
+  const enteredIds = Object.keys(invCounts);
+  if (!enteredIds.length) { alert("少なくとも1品目は数量を入力してください。"); return; }
+  document.getElementById("inv-confirm-loc").textContent = currentLocation;
+  document.getElementById("inv-confirm-staff").textContent = staff;
+  document.getElementById("inv-confirm-count").textContent = enteredIds.length + "/" + invItems.length + " 品目";
+  const preview = enteredIds.slice(0, 6).map(id => {
+    const it = invItems.find(i => i.id === id);
+    return it ? `・${it.name}：${invCounts[id]}${it.unit || ""}` : "";
+  }).join("<br>");
+  document.getElementById("inv-confirm-preview").innerHTML = preview + (enteredIds.length > 6 ? `<br>他 ${enteredIds.length - 6}件…` : "");
+  showScr("inv-confirm");
+}
+async function sendInventory() {
+  const url = getGasUrl();
+  if (!url) {
+    alert("GASのデプロイURLが設定されていません。「⚙️ 設定」から登録してください。");
+    openSettings();
+    return;
+  }
+  const btn = document.getElementById("inv-send-btn");
+  btn.disabled = true;
+  btn.textContent = "送信中...";
+
+  const today = new Date().toISOString().split("T")[0];
+  const items = Object.keys(invCounts).map(id => {
+    const it = invItems.find(i => i.id === id) || {};
+    return { id, name: it.name || "", unit: it.unit || "", qty: invCounts[id], theoreticalStock: it.theoreticalStock != null ? it.theoreticalStock : null };
+  });
+  const payload = { action: "submitInventory", location: currentLocation, staff, date: today, items };
+
+  try {
+    const res = await fetch(url, {
+      method: "POST",
+      headers: { "Content-Type": "text/plain" },
+      body: JSON.stringify(payload)
+    });
+    const data = await res.json();
+    if (data.ok) {
+      document.getElementById("done-title").textContent = "棚卸を記録しました";
+      document.getElementById("done-sub").textContent = `「${currentLocation}」の棚卸結果（${items.length}件）をNotionに送信しました`;
+      showScr("done");
+      loadInventoryStatus();
+    } else {
+      alert("エラー: " + (data.error || "不明なエラー"));
+    }
+  } catch (err) {
+    alert("送信失敗: " + err.message);
+  }
+
+  btn.disabled = false;
+  btn.textContent = "Notionに記録";
+}
+// ============================================================
+//  チェック処理（開店前・締め作業）
 // ============================================================
 function startMode(m) {
   if (!getGasUrl()) {
@@ -556,6 +982,11 @@ function toCheck() {
   const inp = document.getElementById("staff-input");
   const name = inp.value.trim();
   if (!name) { document.getElementById("staff-err").style.display = "block"; return; }
+  if (currentMode === "inventory") {
+    staff = name;
+    toInvCheck();
+    return;
+  }
   const alreadyChecked = notionRecords.find(r => r.staff === name && r.mode === currentMode);
   if (alreadyChecked) {
     document.getElementById("staff-warn").innerHTML =
@@ -630,6 +1061,8 @@ async function send() {
     const data = await res.json();
 
     if (data.ok) {
+      document.getElementById("done-title").textContent = "記録しました";
+      document.getElementById("done-sub").textContent = "Notionに送信されました";
       showScr("done");
       await loadTodayRecords(); // 送信後にサマリー更新
     } else {
@@ -645,6 +1078,7 @@ async function send() {
 function goHome() {
   showScr("home");
   loadTodayRecords();
+  loadInventoryStatus();
 }
 // ============================================================
 //  初期化
@@ -656,7 +1090,8 @@ document.addEventListener("DOMContentLoaded", () => {
   loadCheckItems("opening");
   loadCheckItems("closing");
   loadTodayRecords();
-  setInterval(loadTodayRecords, 8000); // 8秒間隔で自動更新
+  loadInventoryStatus();
+  setInterval(() => { loadTodayRecords(); loadInventoryStatus(); }, 8000); // 8秒間隔で自動更新（複数人の並行作業状況を反映）
 });
 </script>
 </body>
