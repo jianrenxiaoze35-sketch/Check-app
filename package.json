@@ -1,0 +1,9 @@
+{
+  "name": "check-app",
+  "private": true,
+  "version": "1.0.0",
+  "description": "Daily Check / 棚卸アプリ（GAS経由でNotionに記録）",
+  "scripts": {
+    "test": "node --test tests/*.test.mjs"
+  }
+}

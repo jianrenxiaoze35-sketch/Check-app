@@ -335,6 +335,11 @@ body { font-family: -apple-system, BlinkMacSystemFont, 'Hiragino Sans', sans-ser
 // デフォルトのGAS URL（未設定時のフォールバック。空文字でも構いません）
 const DEFAULT_GAS_URL = "";
 const GAS_URL_STORAGE_KEY = "daily-check-gas-url";
+// GASへのPOSTは text/plain で送る（CORSプリフライトを避けるため）。
+// charset=UTF-8 を必ず付けること：省略すると Apps Script 側が本文を
+// ISO-8859-1 として解釈し、日本語（保管場所名・担当者名・品目名など）が
+// 文字化けした状態でNotionに登録される。
+const GAS_CONTENT_TYPE = "text/plain;charset=UTF-8";
 const STORAGE_KEY = "daily-check-staffs";
 // ★★★ Notion DB のブラウザ閲覧URL（要設定）★★★
 const NOTION_DB_URL = {
@@ -431,7 +436,7 @@ async function testGasUrl() {
   try {
     const res = await fetch(url, {
       method: "POST",
-      headers: { "Content-Type": "text/plain" },
+      headers: { "Content-Type": GAS_CONTENT_TYPE },
       body: JSON.stringify({ action: "getCheckItems", mode: "opening" })
     });
     const data = await res.json();
@@ -530,7 +535,7 @@ async function loadCheckItems(mode) {
   try {
     const res = await fetch(url, {
       method: "POST",
-      headers: { "Content-Type": "text/plain" },
+      headers: { "Content-Type": GAS_CONTENT_TYPE },
       body: JSON.stringify({ action: "getCheckItems", mode: mode })
     });
     const data = await res.json();
@@ -546,7 +551,7 @@ async function loadTodayRecords() {
   try {
     const res = await fetch(url, {
       method: "POST",
-      headers: { "Content-Type": "text/plain" },
+      headers: { "Content-Type": GAS_CONTENT_TYPE },
       body: JSON.stringify({ action: "fetchTodayRecords" })
     });
     const data = await res.json();
@@ -669,7 +674,7 @@ async function loadInventoryStatus() {
   try {
     const res = await fetch(url, {
       method: "POST",
-      headers: { "Content-Type": "text/plain" },
+      headers: { "Content-Type": GAS_CONTENT_TYPE },
       body: JSON.stringify({ action: "getInventoryStatus" })
     });
     const data = await res.json();
@@ -779,7 +784,7 @@ async function finalizeInventory(force) {
     const today = new Date().toISOString().split("T")[0];
     const res = await fetch(url, {
       method: "POST",
-      headers: { "Content-Type": "text/plain" },
+      headers: { "Content-Type": GAS_CONTENT_TYPE },
       body: JSON.stringify({ action: "finalizeInventory", date: today, force: !!force })
     });
     const data = await res.json();
@@ -844,7 +849,7 @@ async function toInvCheck() {
   try {
     const res = await fetch(url, {
       method: "POST",
-      headers: { "Content-Type": "text/plain" },
+      headers: { "Content-Type": GAS_CONTENT_TYPE },
       body: JSON.stringify({ action: "getInventoryItems", location: currentLocation })
     });
     const data = await res.json();
@@ -941,7 +946,7 @@ async function sendInventory() {
   try {
     const res = await fetch(url, {
       method: "POST",
-      headers: { "Content-Type": "text/plain" },
+      headers: { "Content-Type": GAS_CONTENT_TYPE },
       body: JSON.stringify(payload)
     });
     const data = await res.json();
@@ -1055,7 +1060,7 @@ async function send() {
   try {
     const res = await fetch(url, {
       method: "POST",
-      headers: { "Content-Type": "text/plain" },
+      headers: { "Content-Type": GAS_CONTENT_TYPE },
       body: JSON.stringify(payload)
     });
     const data = await res.json();
